@@ -210,7 +210,7 @@ for(x in seq_along(rec_sen)){
 
 gossip_sum
 
-# Need to exclude networks F106b-c-d (little gossip reported in these units)
+# Need to exclude networks F106b-c-d (gossip reported by less than 1/3 of the sample in these three units)
 excl <- c('F106b','F106c','F106d')
 attributes <- attributes[attributes$group %!in% excl,]
 missing_respondents <- missing_respondents[missing_respondents %in% attributes$responder]
