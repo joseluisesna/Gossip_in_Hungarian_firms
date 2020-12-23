@@ -6,7 +6,7 @@
 ########################################################################################################################
 
 # R PACKAGES REQUIRED
-library(ggplot2)
+library(ggplot2);library(sna)
 
 # DATA LOADING AND DATA TIDYING
 load('data.RData')
