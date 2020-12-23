@@ -1,7 +1,7 @@
 ########################################################################################################################
 ## GOSSIP IN HUNGARIAN FIRMS
 ## Creation of composite networks (2)
-## R script written by Jose Luis Estevez (University of Linkoping)
+## R script written by Jose Luis Estevez (Linkoping University)
 ## Date: December 23rd 2020
 ########################################################################################################################
 
@@ -236,7 +236,7 @@ ggplot(data=degree_sum)+
   geom_line(aes(x=cutoff,y=degree,group=Unit,colour=Unit),linetype='solid',size=1.5)+
   geom_point(aes(x=cutoff,y=degree,),colour='black',size=4)+
   geom_point(aes(x=cutoff,y=degree,colour=Unit),size=3)+
-  geom_vline(data=data.frame(xint=c(6,1,6),tie=c('affective','negative','respect')),
+  geom_vline(data=data.frame(xint=c(7,2,7),tie=c('affective','negative','respect')),
              aes(xintercept=xint),linetype='solid',colour='red',size=3,alpha=.5)+ 
   facet_wrap(~tie,nrow=1,scales='free_x')+
   xlab('Number of network items')+ylab('Average out-degree in the composite network')+
@@ -251,9 +251,9 @@ networks_mtx <- comp_networks
 for(i in seq_along(networks_mtx)){
   for(j in seq_along(networks_mtx[[i]])){
     if(j %in% 1:2){
-      networks_mtx[[i]][[j]] <- 1*(networks_mtx[[i]][[j]] >= 6)
+      networks_mtx[[i]][[j]] <- 1*(networks_mtx[[i]][[j]] >= 7)
     }else{
-      networks_mtx[[i]][[j]] <- 1*(networks_mtx[[i]][[j]] >= 1)
+      networks_mtx[[i]][[j]] <- 1*(networks_mtx[[i]][[j]] >= 2)
     }
   }
 }
