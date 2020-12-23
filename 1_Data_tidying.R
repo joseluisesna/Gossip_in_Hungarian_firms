@@ -1,7 +1,7 @@
 ########################################################################################################################
 ## GOSSIP IN HUNGARIAN FIRMS
 ## Data tidying (1)
-## R script written by Jose Luis Estevez (University of Linkoping)
+## R script written by Jose Luis Estevez (Linkoping University)
 ## Date: December 22nd, 2020
 ########################################################################################################################
 
