@@ -276,6 +276,13 @@ for(mtx in seq_along(mtx_overlap)){
 
 mtx_overlap
 
+# Inspection of the levels of reciprocation 
+for(i in seq_along(networks_mtx)){
+  for(j in seq_along(networks_mtx[[i]])){
+    print(sna::grecip(networks_mtx[[i]][[j]]))
+  }
+}
+
 ########################################################################################################################
 
 # Removal of unnecessary objects
