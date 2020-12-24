@@ -6,7 +6,7 @@
 ########################################################################################################################
 
 # R PACKAGES REQUIRED
-library(lpSolve);library(irr);library(ape);library(lattice);library(ggplot2);library(sna);library(viridis)
+library(lpSolve);library(irr);library(ape);library(lattice);library(ggplot2);library(sna);library(viridis);library(igraph)
 
 # DATA LOADING AND DATA TIDYING
 load('tidieddata.RData')
@@ -283,12 +283,33 @@ for(i in seq_along(networks_mtx)){
   }
 }
 
+# Visualisation of the networks
+ntw_plot <- networks_mtx
+for(i in seq_along(ntw_plot)){
+  # Clustering using Newman's method
+  ntw_plot[[i]]$group <- sna::symmetrize(ntw_plot[[i]]$affective,rule='weak') # max symmetrising
+  ntw_plot[[i]]$group <- graph_from_adjacency_matrix(ntw_plot[[i]]$group,mode='undirected',diag=FALSE)
+  ntw_plot[[i]]$group <- igraph::cluster_edge_betweenness(ntw_plot[[i]]$group) # clustering
+  # Show both affective and negative ties
+  ntw_plot[[i]]$vis <- graph_from_adjacency_matrix(ntw_plot[[i]]$affective - ntw_plot[[i]]$negative,
+                                                   mode='directed',diag=FALSE,weighted=TRUE)
+  # Layout based only on affective ties
+  ntw_plot[[i]]$layout <- layout_with_kk(graph_from_adjacency_matrix(ntw_plot[[i]]$affective,mode='directed'))
+  E(ntw_plot[[i]]$vis)$color <- as.character(factor(E(ntw_plot[[i]]$vis)$weight,
+                                                    levels=c(-1,1),labels=c('red','darkgreen')))
+  # Visualisation
+  jpeg(filename=paste('Unit',i,'.jpeg',sep=''),width=7,height=7,units='in',res=1000)
+  plot(ntw_plot[[i]]$vis,mark.groups=ntw_plot[[i]]$group,
+       vertex.label=NA,vertex.size=8,edge.arrow.size=.5,layout=ntw_plot[[i]]$layout)
+  dev.off()
+}
+
 ########################################################################################################################
 
 # Removal of unnecessary objects
 rm(cluster_model);rm(ape_model);rm(mean_jaccard);rm(mean_jaccard2);rm(networks_available);rm(clust_order);rm(Jaccard)
 rm(matrix_selection);rm(mtx);rm(i);rm(j);rm(k);rm(colours);rm(cutrees);rm(cuts);rm(affective);rm(respect);rm(negative)
-rm(items);rm(degree_sum);rm(grid.background);rm(mtx_overlap)
+rm(items);rm(degree_sum);rm(grid.background);rm(mtx_overlap);rm(ntw_plot)
 
 # Save image
 save.image('tidieddata2.RData')
