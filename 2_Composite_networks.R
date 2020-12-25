@@ -288,7 +288,7 @@ for(i in seq_along(networks_mtx)){
   }
 }
 
-# Max-symmtrisisation of the networks
+# Max-symmetrisation of the networks
 sym_mtx <- networks_mtx
 for(i in seq_along(sym_mtx)){
   for(j in seq_along(sym_mtx[[i]])){
