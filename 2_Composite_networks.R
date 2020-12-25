@@ -314,7 +314,7 @@ for(i in seq_along(ntw_plot)){
                                                     levels=c(-1,1),labels=c('red','darkgreen')))
   E(ntw_plot[[i]]$vis)$width <- as.character(factor(E(ntw_plot[[i]]$vis)$weight,levels=c(-1,1),labels=c(1,2)))
   # Visualisation
-  jpeg(filename=paste('Unit',i,'.jpeg',sep=''),width=7,height=7,units='in',res=1000)
+  jpeg(filename=paste('Unit',i,'.jpeg',sep=''),width=4,height=4,units='in',res=1000)
   plot(ntw_plot[[i]]$vis,mark.groups=ntw_plot[[i]]$group,
        vertex.label=NA,vertex.size=8,layout=ntw_plot[[i]]$layout)
   dev.off()
