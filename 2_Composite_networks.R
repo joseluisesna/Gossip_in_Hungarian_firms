@@ -236,7 +236,7 @@ ggplot(data=degree_sum)+
   geom_line(aes(x=cutoff,y=degree,group=Unit,colour=Unit),linetype='solid',size=1.5)+
   geom_point(aes(x=cutoff,y=degree,),colour='black',size=4)+
   geom_point(aes(x=cutoff,y=degree,colour=Unit),size=3)+
-  geom_vline(data=data.frame(xint=c(7,2,7),tie=c('affective','negative','respect')),
+  geom_vline(data=data.frame(xint=c(8,3,NA),tie=c('affective','negative','respect')),
              aes(xintercept=xint),linetype='solid',colour='red',size=3,alpha=.5)+ 
   facet_wrap(~tie,nrow=1,scales='free_x')+
   xlab('Number of network items')+ylab('Average out-degree in the composite network')+
@@ -249,11 +249,12 @@ dev.off()
 networks_mtx <- comp_networks 
 
 for(i in seq_along(networks_mtx)){
+  networks_mtx[[i]]$respect <- NULL # respect excluded
   for(j in seq_along(networks_mtx[[i]])){
-    if(j %in% 1:2){
-      networks_mtx[[i]][[j]] <- 1*(networks_mtx[[i]][[j]] >= 7)
+    if(j == 1){
+      networks_mtx[[i]][[j]] <- 1*(networks_mtx[[i]][[j]] >= 8) # affective
     }else{
-      networks_mtx[[i]][[j]] <- 1*(networks_mtx[[i]][[j]] >= 2)
+      networks_mtx[[i]][[j]] <- 1*(networks_mtx[[i]][[j]] >= 3) # negative
     }
   }
 }
@@ -271,15 +272,19 @@ for(mtx in seq_along(mtx_overlap)){
       mtx_overlap[[mtx]][i,j] <- Jaccard(networks_mtx[[mtx]][[i]],networks_mtx[[mtx]][[j]])
     }
   }
-  diag(mtx_overlap[[mtx]]) <- NA
 }
 
 mtx_overlap
 
-# Inspection of the levels of reciprocation 
+# Inspection of the levels of density, reciprocation, and transitivity 
 for(i in seq_along(networks_mtx)){
   for(j in seq_along(networks_mtx[[i]])){
-    print(sna::grecip(networks_mtx[[i]][[j]]))
+    d <- round(as.vector(sna::gden(networks_mtx[[i]][[j]])),2)
+    m <- round(as.vector(sna::grecip(networks_mtx[[i]][[j]])),2)
+    t <- round(as.vector(sna::gtrans(networks_mtx[[i]][[j]])),2)
+    output <- data.frame(c(d,m,t),row.names=c('Density','Mutual','Transitive'))
+    colnames(output) <- paste(names(networks_mtx)[[i]],names(networks_mtx[[i]])[[j]])
+    print(output)
   }
 }
 
@@ -309,7 +314,7 @@ for(i in seq_along(ntw_plot)){
 # Removal of unnecessary objects
 rm(cluster_model);rm(ape_model);rm(mean_jaccard);rm(mean_jaccard2);rm(networks_available);rm(clust_order);rm(Jaccard)
 rm(matrix_selection);rm(mtx);rm(i);rm(j);rm(k);rm(colours);rm(cutrees);rm(cuts);rm(affective);rm(respect);rm(negative)
-rm(items);rm(degree_sum);rm(grid.background);rm(mtx_overlap);rm(ntw_plot)
+rm(items);rm(degree_sum);rm(grid.background);rm(mtx_overlap);rm(ntw_plot);rm(d);rm(m);rm(t);rm(output)
 
 # Save image
 save.image('tidieddata2.RData')
