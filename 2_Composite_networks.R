@@ -288,24 +288,35 @@ for(i in seq_along(networks_mtx)){
   }
 }
 
+# Max-symmtrisisation of the networks
+sym_mtx <- networks_mtx
+for(i in seq_along(sym_mtx)){
+  for(j in seq_along(sym_mtx[[i]])){
+    sym_mtx[[i]][[j]] <- sna::symmetrize(sym_mtx[[i]][[j]],rule='weak')
+  }
+}
+
 # Visualisation of the networks
-ntw_plot <- networks_mtx
+ntw_plot <- sym_mtx
 for(i in seq_along(ntw_plot)){
-  # Clustering using Newman's method
-  ntw_plot[[i]]$group <- sna::symmetrize(ntw_plot[[i]]$affective,rule='weak') # max symmetrising
+  # Clustering using Newman's method based on positive ties only
+  ntw_plot[[i]]$group <- ntw_plot[[i]]$affective 
   ntw_plot[[i]]$group <- graph_from_adjacency_matrix(ntw_plot[[i]]$group,mode='undirected',diag=FALSE)
   ntw_plot[[i]]$group <- igraph::cluster_edge_betweenness(ntw_plot[[i]]$group) # clustering
   # Show both affective and negative ties
   ntw_plot[[i]]$vis <- graph_from_adjacency_matrix(ntw_plot[[i]]$affective - ntw_plot[[i]]$negative,
-                                                   mode='directed',diag=FALSE,weighted=TRUE)
+                                                   mode='undirected',diag=FALSE,weighted=TRUE)
   # Layout based only on affective ties
   ntw_plot[[i]]$layout <- layout_with_kk(graph_from_adjacency_matrix(ntw_plot[[i]]$affective,mode='directed'))
+  # Customisation of nodes and ties
+  V(ntw_plot[[i]]$vis)$color <- 'darkgrey'
   E(ntw_plot[[i]]$vis)$color <- as.character(factor(E(ntw_plot[[i]]$vis)$weight,
                                                     levels=c(-1,1),labels=c('red','darkgreen')))
+  E(ntw_plot[[i]]$vis)$width <- as.character(factor(E(ntw_plot[[i]]$vis)$weight,levels=c(-1,1),labels=c(1,2)))
   # Visualisation
   jpeg(filename=paste('Unit',i,'.jpeg',sep=''),width=7,height=7,units='in',res=1000)
   plot(ntw_plot[[i]]$vis,mark.groups=ntw_plot[[i]]$group,
-       vertex.label=NA,vertex.size=8,edge.arrow.size=.5,layout=ntw_plot[[i]]$layout)
+       vertex.label=NA,vertex.size=8,layout=ntw_plot[[i]]$layout)
   dev.off()
 }
 
