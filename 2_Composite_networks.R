@@ -290,9 +290,20 @@ for(i in seq_along(networks_mtx)){
 
 # Max-symmetrisation of the networks
 sym_mtx <- networks_mtx
-for(i in seq_along(sym_mtx)){
-  for(j in seq_along(sym_mtx[[i]])){
-    sym_mtx[[i]][[j]] <- sna::symmetrize(sym_mtx[[i]][[j]],rule='weak')
+for(x in seq_along(sym_mtx)){
+  for(y in seq_along(sym_mtx[[x]])){
+    sym_mtx[[x]][[y]] <- sna::symmetrize(1*(!is.na(sym_mtx[[x]][[y]]) & sym_mtx[[x]][[y]]==1),rule='weak')
+    rownames(sym_mtx[[x]][[y]]) <- colnames(sym_mtx[[x]][[y]]) <- rownames(networks_mtx[[x]][[y]])
+    # Allocation of missing data
+    diag(sym_mtx[[x]][[y]]) <- NA
+    for(i in 1:nrow(sym_mtx[[x]][[y]])){
+      for(j in 1:ncol(sym_mtx[[x]][[y]])){
+        if(rownames(sym_mtx[[x]][[y]])[i] %in% missing_respondents &
+           colnames(sym_mtx[[x]][[y]])[j] %in% missing_respondents){
+          sym_mtx[[x]][[y]][i,j] <- NA
+        }
+      }
+    }
   }
 }
 
@@ -325,7 +336,7 @@ for(i in seq_along(ntw_plot)){
 # Removal of unnecessary objects
 rm(cluster_model);rm(ape_model);rm(mean_jaccard);rm(mean_jaccard2);rm(networks_available);rm(clust_order);rm(Jaccard)
 rm(matrix_selection);rm(mtx);rm(i);rm(j);rm(k);rm(colours);rm(cutrees);rm(cuts);rm(affective);rm(respect);rm(negative)
-rm(items);rm(degree_sum);rm(grid.background);rm(mtx_overlap);rm(ntw_plot);rm(d);rm(m);rm(t);rm(output)
+rm(items);rm(degree_sum);rm(grid.background);rm(mtx_overlap);rm(ntw_plot);rm(x);rm(y);rm(d);rm(m);rm(t);rm(output)
 
 # Save image
 save.image('tidieddata2.RData')
