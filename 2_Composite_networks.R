@@ -236,7 +236,7 @@ ggplot(data=degree_sum)+
   geom_line(aes(x=cutoff,y=degree,group=Unit,colour=Unit),linetype='solid',size=1.5)+
   geom_point(aes(x=cutoff,y=degree,),colour='black',size=4)+
   geom_point(aes(x=cutoff,y=degree,colour=Unit),size=3)+
-  geom_vline(data=data.frame(xint=c(8,3,NA),tie=c('affective','negative','respect')),
+  geom_vline(data=data.frame(xint=c(7,3,NA),tie=c('affective','negative','respect')),
              aes(xintercept=xint),linetype='solid',colour='red',size=3,alpha=.5)+ 
   facet_wrap(~tie,nrow=1,scales='free_x')+
   xlab('Number of network items')+ylab('Average out-degree in the composite network')+
@@ -252,7 +252,7 @@ for(i in seq_along(networks_mtx)){
   networks_mtx[[i]]$respect <- NULL # respect excluded
   for(j in seq_along(networks_mtx[[i]])){
     if(j == 1){
-      networks_mtx[[i]][[j]] <- 1*(networks_mtx[[i]][[j]] >= 8) # affective
+      networks_mtx[[i]][[j]] <- 1*(networks_mtx[[i]][[j]] >= 7) # affective
     }else{
       networks_mtx[[i]][[j]] <- 1*(networks_mtx[[i]][[j]] >= 3) # negative
     }
