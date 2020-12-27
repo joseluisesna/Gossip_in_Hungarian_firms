@@ -226,52 +226,92 @@ organisation_ID <- organisation_ID[organisation_ID %!in% excl]
 
 ########################################################################################################################
 
-# RECIPROCITY OF THE GOSSIP NETWORKS (TARGET-SPECIFIC)
+# SOME DESCRIPTIVES OF THE GOSSIP DATA
 
 desc_sender <- vector('list',length=length(gossip_cube))
 for(i in seq_along(gossip_cube)){
   desc_sender[[i]] <- as.data.frame(matrix(NA,nrow=nrow(gossip_cube[[i]]),ncol=7))
   rownames(desc_sender[[i]]) <- rownames(gossip_cube[[i]])
-  colnames(desc_sender[[i]]) <- c('network','dyads','gosip','dyads_pos','gosip_pos','dyads_neg','gosip_neg')
+  colnames(desc_sender[[i]]) <- c('network','dyads','gossip','dyads_pos','gossip_pos','dyads_neg','gossip_neg')
   desc_sender[[i]]$network <- names(gossip_cube)[i]
 }
 
+desc_target <- desc_receiver <- desc_sender
+
 for(x in seq_along(desc_sender)){
   for(i in 1:nrow(desc_sender[[x]])){
+    # Sender-specific 
     desc_sender[[x]]$dyads[i] <- sum(gos[[x]][i,,],na.rm=TRUE)
-    desc_sender[[x]]$gosip[i] <- sna::grecip(gos[[x]][i,,],measure='edgewise')
+    desc_sender[[x]]$gossip[i] <- sna::grecip(gos[[x]][i,,],measure='edgewise')
     desc_sender[[x]]$dyads_pos[i] <- sum(gos_pos[[x]][i,,],na.rm=TRUE)
     desc_sender[[x]]$gossip_pos[i] <- sna::grecip(gos_pos[[x]][i,,],measure='edgewise')
     desc_sender[[x]]$dyads_neg[i] <- sum(gos_neg[[x]][i,,],na.rm=TRUE)
     desc_sender[[x]]$gossip_neg[i] <- sna::grecip(gos_neg[[x]][i,,],measure='edgewise') 
+    desc_sender[[x]]$party[i] <- 'sender'
+    # Receiver-specific 
+    desc_receiver[[x]]$dyads[i] <- sum(gos[[x]][,i,],na.rm=TRUE)
+    desc_receiver[[x]]$gossip[i] <- sna::grecip(gos[[x]][,i,],measure='edgewise')
+    desc_receiver[[x]]$dyads_pos[i] <- sum(gos_pos[[x]][,i,],na.rm=TRUE)
+    desc_receiver[[x]]$gossip_pos[i] <- sna::grecip(gos_pos[[x]][,i,],measure='edgewise')
+    desc_receiver[[x]]$dyads_neg[i] <- sum(gos_neg[[x]][,i,],na.rm=TRUE)
+    desc_receiver[[x]]$gossip_neg[i] <- sna::grecip(gos_neg[[x]][,i,],measure='edgewise')
+    desc_receiver[[x]]$party[i] <- 'receiver'
+    # Target-specific 
+    desc_target[[x]]$dyads[i] <- sum(gos[[x]][,,i],na.rm=TRUE)
+    desc_target[[x]]$gossip[i] <- sna::grecip(gos[[x]][,,i],measure='edgewise')
+    desc_target[[x]]$dyads_pos[i] <- sum(gos_pos[[x]][,,i],na.rm=TRUE)
+    desc_target[[x]]$gossip_pos[i] <- sna::grecip(gos_pos[[x]][,,i],measure='edgewise')
+    desc_target[[x]]$dyads_neg[i] <- sum(gos_neg[[x]][,,i],na.rm=TRUE)
+    desc_target[[x]]$gossip_neg[i] <- sna::grecip(gos_neg[[x]][,,i],measure='edgewise')
+    desc_target[[x]]$party[i] <- 'target'
   }
 }
 
 desc_sender <- do.call('rbind',desc_sender)
+desc_receiver <- do.call('rbind',desc_receiver)
+desc_target <- do.call('rbind',desc_target)
 
-# Label for the senders
-desc_sender$sender <- rownames(desc_sender) 
-for(i in 1:nrow(desc_sender)){
-  if(desc_sender$network[i] %in% c('A104','F101','F106a')){
-    desc_sender$sender[i] <- substr(desc_sender$sender[i],5,6)
-  }else if(desc_sender$network[i] %in% c('F105','P102')){
-    desc_sender$sender[i] <- substr(desc_sender$sender[i],4,5)
+desc_gossip <- do.call('rbind',list(desc_sender,desc_receiver,desc_target))
+
+# Label for x-axis
+desc_gossip$subject <- rownames(desc_gossip) 
+for(i in 1:nrow(desc_gossip)){
+  if(desc_gossip$network[i] %in% c('A104','F101','F106a')){
+    desc_gossip$subject[i] <- substr(desc_gossip$subject[i],5,6)
+  }else if(desc_gossip$network[i] %in% c('F105','P102')){
+    desc_gossip$subject[i] <- substr(desc_gossip$subject[i],4,5)
   }else{
-    desc_sender$sender[i] <- substr(desc_sender$sender[i],6,7)
+    desc_gossip$subject[i] <- substr(desc_gossip$subject[i],6,7)
   }
 }
 
+desc_gossip[desc_gossip$subject == 32,]$subject <- 15
+desc_gossip[desc_gossip$subject == 33,]$subject <- 16
+
 # Max reciprocity observed
-c(max(desc_sender$gossip_pos,na.rm=TRUE),max(desc_sender$gossip_neg,na.rm=TRUE))
+c(max(desc_gossip$gossip_pos,na.rm=TRUE),max(desc_gossip$gossip_neg,na.rm=TRUE))
 
-desc_sender$gossip_pos <- ifelse(desc_sender$gossip_pos >= .3,'[30%,40%]',
-                                 ifelse(desc_sender$gossip_pos >= .2,'[20%,30%)',
-                                        ifelse(desc_sender$gossip_pos >= .1,'[10%,20%)','[0%,10%)')))
-desc_sender$gossip_neg <- ifelse(desc_sender$gossip_neg >= .3,'[30%,40%]',
-                                 ifelse(desc_sender$gossip_neg >= .2,'[20%,30%)',
-                                        ifelse(desc_sender$gossip_neg >= .1,'[10%,20%)','[0%,10%)')))
+desc_gossip$gossip_pos <- ifelse(desc_gossip$gossip_pos >= .9,'[90%,100%]',
+                                 ifelse(desc_gossip$gossip_pos >= .8,'[80%,90%)',
+                                        ifelse(desc_gossip$gossip_pos >= .7,'[70%,80%)',
+                                               ifelse(desc_gossip$gossip_pos >= .6,'[60%,70%]',
+                                                      ifelse(desc_gossip$gossip_pos >= .5,'[50%,60%)',
+                                                             ifelse(desc_gossip$gossip_pos >= .4,'[40%,50%)',
+                                                                    ifelse(desc_gossip$gossip_neg >= .3,'[30%,40%)',
+                                                                           ifelse(desc_gossip$gossip_neg >= .2,'[20%,30%)',
+                                                                                  ifelse(desc_gossip$gossip_neg >= .1,'[10%,20%)','[0%,10%)')))))))))
 
-# Visualisation
+desc_gossip$gossip_neg <- ifelse(desc_gossip$gossip_neg >= .9,'[90%,100%]',
+                                 ifelse(desc_gossip$gossip_neg >= .8,'[80%,90%)',
+                                        ifelse(desc_gossip$gossip_neg >= .7,'[70%,80%)',
+                                               ifelse(desc_gossip$gossip_neg >= .6,'[60%,70%]',
+                                                      ifelse(desc_gossip$gossip_neg >= .5,'[50%,60%)',
+                                                             ifelse(desc_gossip$gossip_neg >= .4,'[40%,50%)',
+                                                                    ifelse(desc_gossip$gossip_neg >= .3,'[30%,40%)',
+                                                                           ifelse(desc_gossip$gossip_neg >= .2,'[20%,30%)',
+                                                                                  ifelse(desc_gossip$gossip_neg >= .1,'[10%,20%)','[0%,10%)')))))))))
+
+# Visualisations
 grid.background <- theme_bw()+
   theme(plot.background=element_blank(),panel.grid.minor=element_blank(),panel.border=element_blank())+
   theme(axis.line=element_line(color='black'))+
@@ -279,14 +319,38 @@ grid.background <- theme_bw()+
   theme(strip.background=element_rect(fill='black'))
 
 jpeg(filename='Sender-specific gossip.jpeg',width=11,height=6,units='in',res=1000)
-ggplot(data=desc_sender)+
-  geom_point(aes(x=sender,y=dyads_pos,colour=gossip_pos),size=4,alpha=1/3)+
-  geom_point(aes(x=sender,y=dyads_neg,colour=gossip_neg),size=4,alpha=1/3)+
-  geom_point(aes(x=sender,y=dyads_pos),colour='darkgreen',size=4,shape='+')+
-  geom_point(aes(x=sender,y=dyads_neg),colour='red',size=4,shape='-')+
+ggplot(data=desc_gossip[desc_gossip$party == 'sender',])+
+  geom_point(aes(x=subject,y=dyads_pos,colour=gossip_pos),size=4,alpha=1/3)+
+  geom_point(aes(x=subject,y=dyads_neg,colour=gossip_neg),size=4,alpha=1/3)+
+  geom_point(aes(x=subject,y=dyads_pos),colour='darkgreen',size=4,shape='+')+
+  geom_point(aes(x=subject,y=dyads_neg),colour='red',size=4,shape='-')+
   facet_wrap(~network,nrow=3,scales='free')+
-  scale_colour_manual(name='Mutual',values=colorRampPalette(c('royalblue','darkorange'))(4))+
+  scale_colour_manual(name='Mutual',values=colorRampPalette(c('royalblue','darkorange'))(5))+
   xlab('Sender')+ylab('Receiver-target dyads')+
+  grid.background
+dev.off()
+
+jpeg(filename='Receiver-specific gossip.jpeg',width=11,height=6,units='in',res=1000)
+ggplot(data=desc_gossip[desc_gossip$party == 'receiver',])+
+  geom_point(aes(x=subject,y=dyads_pos,colour=gossip_pos),size=4,alpha=1/3)+
+  geom_point(aes(x=subject,y=dyads_neg,colour=gossip_neg),size=4,alpha=1/3)+
+  geom_point(aes(x=subject,y=dyads_pos),colour='darkgreen',size=4,shape='+')+
+  geom_point(aes(x=subject,y=dyads_neg),colour='red',size=4,shape='-')+
+  facet_wrap(~network,nrow=3,scales='free')+
+  scale_colour_manual(name='Mutual',values=colorRampPalette(c('royalblue','darkorange'))(5))+
+  xlab('Receiver')+ylab('Sender-target dyads')+
+  grid.background
+dev.off()
+
+jpeg(filename='Target-specific gossip.jpeg',width=11,height=6,units='in',res=1000)
+ggplot(data=desc_gossip[desc_gossip$party == 'target',])+
+  geom_point(aes(x=subject,y=dyads_pos,colour=gossip_pos),size=4,alpha=1/3)+
+  geom_point(aes(x=subject,y=dyads_neg,colour=gossip_neg),size=4,alpha=1/3)+
+  geom_point(aes(x=subject,y=dyads_pos),colour='darkgreen',size=4,shape='+')+
+  geom_point(aes(x=subject,y=dyads_neg),colour='red',size=4,shape='-')+
+  facet_wrap(~network,nrow=3,scales='free')+
+  scale_colour_manual(name='Mutual',values=colorRampPalette(c('royalblue','darkorange'))(5))+
+  xlab('Target')+ylab('Sender-receiver dyads')+
   grid.background
 dev.off()
 
@@ -316,8 +380,8 @@ length(unique(inconst_gos$target)) # 36 unique targets
 ########################################################################################################################
 
 # Removal of unnecessary objects
-rm(rec_sen);rm(rec_sen_pos);rm(rec_sen_neg);rm(desc_sender);rm(gos);rm(grid.background);rm(excl)
-rm(gos_pos);rm(gos_neg);rm(intersect_posneg);rm(inconst_gos);rm(i);rm(j);rm(k);rm(x)
+rm(rec_sen);rm(rec_sen_pos);rm(rec_sen_neg);rm(desc_sender);rm(desc_receiver);rm(desc_target);rm(gos);rm(excl)
+rm(gos_pos);rm(gos_neg);rm(intersect_posneg);rm(inconst_gos);rm(i);rm(j);rm(k);rm(x);rm(grid.background)
 
 # Save image
 save.image('tidieddata.RData')
