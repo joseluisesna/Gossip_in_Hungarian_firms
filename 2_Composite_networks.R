@@ -236,8 +236,10 @@ ggplot(data=degree_sum)+
   geom_line(aes(x=cutoff,y=degree,group=Unit,colour=Unit),linetype='solid',size=1.5)+
   geom_point(aes(x=cutoff,y=degree,),colour='black',size=4)+
   geom_point(aes(x=cutoff,y=degree,colour=Unit),size=3)+
-  geom_vline(data=data.frame(xint=c(7,3,NA),tie=c('affective','negative','respect')),
-             aes(xintercept=xint),linetype='solid',colour='red',size=3,alpha=.5)+ 
+  geom_vline(data=data.frame(xint=c(NA,3,NA),tie=c('affective','negative','respect')),
+             aes(xintercept=xint),linetype='solid',colour='red',size=12,alpha=.33)+
+  geom_hline(data=data.frame(yint=c(3,NA,NA),tie=c('affective','negative','respect')),
+             aes(yintercept=yint),linetype='solid',colour='red',size=12,alpha=.33)+
   facet_wrap(~tie,nrow=1,scales='free_x')+
   xlab('Number of network items')+ylab('Average out-degree in the composite network')+
   scale_x_continuous(breaks=1:8)+
@@ -250,16 +252,31 @@ networks_mtx <- comp_networks
 
 for(i in seq_along(networks_mtx)){
   networks_mtx[[i]]$respect <- NULL # respect excluded
-  for(j in seq_along(networks_mtx[[i]])){
-    if(j == 1){
-      networks_mtx[[i]][[j]] <- 1*(networks_mtx[[i]][[j]] >= 7) # affective
-    }else{
-      networks_mtx[[i]][[j]] <- 1*(networks_mtx[[i]][[j]] >= 3) # negative
+  
+  if(i == 3){
+    for(j in seq_along(networks_mtx[[i]])){
+      if(j == 1){
+        networks_mtx[[i]][[j]] <- 1*(networks_mtx[[i]][[j]] >= 8) # affective
+      }else{
+        networks_mtx[[i]][[j]] <- 1*(networks_mtx[[i]][[j]] >= 3) # negative
+      }
+    }
+  }else{
+    for(j in seq_along(networks_mtx[[i]])){
+      if(j == 1){
+        networks_mtx[[i]][[j]] <- 1*(networks_mtx[[i]][[j]] >= 7) # affective
+      }else{
+        networks_mtx[[i]][[j]] <- 1*(networks_mtx[[i]][[j]] >= 3) # negative
+      }
     }
   }
 }
 
-# Inspection the overlap between these three type of ties
+# In unit F103, one subject has a massive outdegree (27), which was sent to missing
+rowSums(networks_mtx$F103$affective == 1,na.rm=TRUE)
+networks_mtx$F103$affective['1F03013',] <- NA 
+
+# Inspection the overlap between type of ties
 mtx_overlap <- networks_mtx 
 for(i in seq_along(mtx_overlap)){
   mtx_overlap[[i]] <- array(NA,dim=c(rep(length(mtx_overlap[[i]]),2)),
@@ -276,13 +293,12 @@ for(mtx in seq_along(mtx_overlap)){
 
 mtx_overlap
 
-# Inspection of the levels of density, reciprocation, and transitivity 
+# Inspection of the levels of density and reciprocation 
 for(i in seq_along(networks_mtx)){
   for(j in seq_along(networks_mtx[[i]])){
     d <- round(as.vector(sna::gden(networks_mtx[[i]][[j]])),2)
     m <- round(as.vector(sna::grecip(networks_mtx[[i]][[j]])),2)
-    t <- round(as.vector(sna::gtrans(networks_mtx[[i]][[j]])),2)
-    output <- data.frame(c(d,m,t),row.names=c('Density','Mutual','Transitive'))
+    output <- data.frame(c(d,m),row.names=c('Density','Mutual'))
     colnames(output) <- paste(names(networks_mtx)[[i]],names(networks_mtx[[i]])[[j]])
     print(output)
   }
@@ -336,7 +352,7 @@ for(i in seq_along(ntw_plot)){
 # Removal of unnecessary objects
 rm(cluster_model);rm(ape_model);rm(mean_jaccard);rm(mean_jaccard2);rm(networks_available);rm(clust_order);rm(Jaccard)
 rm(matrix_selection);rm(mtx);rm(i);rm(j);rm(k);rm(colours);rm(cutrees);rm(cuts);rm(affective);rm(respect);rm(negative)
-rm(items);rm(degree_sum);rm(grid.background);rm(mtx_overlap);rm(ntw_plot);rm(x);rm(y);rm(d);rm(m);rm(t);rm(output)
+rm(items);rm(degree_sum);rm(grid.background);rm(mtx_overlap);rm(ntw_plot);rm(x);rm(y);rm(d);rm(m);rm(output)
 
 # Save image
 save.image('tidieddata2.RData')
