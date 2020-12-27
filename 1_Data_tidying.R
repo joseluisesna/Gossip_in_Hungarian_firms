@@ -337,7 +337,7 @@ ggplot(data=desc_gossip[desc_gossip$party == 'receiver',])+
   geom_point(aes(x=subject,y=dyads_pos),colour='darkgreen',size=4,shape='+')+
   geom_point(aes(x=subject,y=dyads_neg),colour='red',size=4,shape='-')+
   facet_wrap(~network,nrow=3,scales='free')+
-  scale_colour_manual(name='Mutual',values=colorRampPalette(c('royalblue','darkorange'))(5))+
+  scale_colour_manual(name='Mutual',values=colorRampPalette(c('royalblue','darkorange'))(10))+
   xlab('Receiver')+ylab('Sender-target dyads')+
   grid.background
 dev.off()
@@ -349,7 +349,7 @@ ggplot(data=desc_gossip[desc_gossip$party == 'target',])+
   geom_point(aes(x=subject,y=dyads_pos),colour='darkgreen',size=4,shape='+')+
   geom_point(aes(x=subject,y=dyads_neg),colour='red',size=4,shape='-')+
   facet_wrap(~network,nrow=3,scales='free')+
-  scale_colour_manual(name='Mutual',values=colorRampPalette(c('royalblue','darkorange'))(5))+
+  scale_colour_manual(name='Mutual',values=colorRampPalette(c('royalblue','darkorange'))(8))+
   xlab('Target')+ylab('Sender-receiver dyads')+
   grid.background
 dev.off()
