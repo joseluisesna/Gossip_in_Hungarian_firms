@@ -260,12 +260,12 @@ grid.background <- theme_bw()+
 
 jpeg(filename='Receiver-specific gossip.jpeg',width=11,height=6,units='in',res=1000)
 ggplot(data=desc_receiver)+
-  geom_point(aes(x=subject,y=dyads_neu),colour='royalblue',size=2)+
-  geom_point(aes(x=subject,y=dyads_neu),colour='white',size=1,shape='N')+
-  geom_point(aes(x=subject,y=dyads_neg),colour='red',size=2)+
-  geom_point(aes(x=subject,y=dyads_neg),size=2,shape='-')+
-  geom_point(aes(x=subject,y=dyads_pos),colour='chartreuse',size=2)+
-  geom_point(aes(x=subject,y=dyads_pos),size=2,shape='+')+
+  geom_point(aes(x=subject,y=dyads_neu),size=2)+
+  geom_point(aes(x=subject,y=dyads_neu),size=1,colour='royalblue')+
+  geom_point(aes(x=subject,y=dyads_neg),size=2)+
+  geom_point(aes(x=subject,y=dyads_neg),size=1,colour='red')+
+  geom_point(aes(x=subject,y=dyads_pos),size=2)+
+  geom_point(aes(x=subject,y=dyads_pos),size=1,colour='chartreuse')+
   facet_wrap(~network,nrow=3,scales='free')+
   xlab('Respondent')+ylab('Sender-target dyads reported')+
   grid.background
