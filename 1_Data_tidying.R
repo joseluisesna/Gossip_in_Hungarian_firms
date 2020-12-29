@@ -78,6 +78,12 @@ for(i in 1:nrow(gossip)){
 }
 gossip <- gossip[valid_triplets,]
 
+# Exclusion of non-valued triplets 
+gossip <- gossip[gossip$info %in% c(-1,1),]
+
+# Any duplicated?
+any(duplicated(gossip[,c('sender','receiver','target')],)) # no duplicated
+
 # Creation of gossip cubes (sender, receiver, target)
 gossip_cube <- org_subject
 for(i in seq_along(gossip_cube)){
@@ -148,7 +154,7 @@ for(x in seq_along(gossip_cube)){
       for(k in 1:nrow(gossip_cube[[x]])){
         if(i != j & i != k & j != k){
           # the gossip cube (no matter if positive or negative)
-          if(!is.na(gossip_cube[[x]][i,j,k]) & gossip_cube[[x]][i,j,k] %in% c(-1,1)){
+          if(!is.na(gossip_cube[[x]][i,j,k])){
             gos[[x]][i,j,k] <- 1
           }else{
             gos[[x]][i,j,k] <- 0
@@ -194,7 +200,6 @@ gossip_sum <- as.data.frame(matrix(NA,nrow=length(rec_sen),ncol=8,
                                    dimnames=list(names(rec_sen),c('triads','triads_pos','triads_neg','triads_total',
                                                                   'reporters','reporters_pos','reporters_neg',
                                                                   'reporters_total'))))
-
 for(x in seq_along(rec_sen)){
   # summary of triads: with gossip, positive or negative, and total possible
   gossip_sum[x,'triads'] <- sum(gos[[x]],na.rm=TRUE)
@@ -208,7 +213,7 @@ for(x in seq_along(rec_sen)){
   gossip_sum[x,'reporters_total'] <- length(rec_sen[[x]])
 }
 
-gossip_sum
+View(gossip_sum)
 
 # Need to exclude networks F106b-c-d (gossip reported by less than 1/3 of the sample in these three units)
 excl <- c('F106b','F106c','F106d')
