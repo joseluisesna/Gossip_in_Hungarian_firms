@@ -194,13 +194,10 @@ for(x in seq_along(rec_sen)){
   rec_sen_pos[[x]] <- apply(rec_sen_pos[[x]],c(2,1),max,na.rm=TRUE)
   rec_sen_neg[[x]] <- apply(rec_sen_neg[[x]],c(2,1),max,na.rm=TRUE)
   rec_sen_neu[[x]] <- apply(rec_sen_neu[[x]],c(2,1),max,na.rm=TRUE)
-  
-  
   diag(rec_sen[[x]]) <- 0
   diag(rec_sen_pos[[x]]) <- 0
   diag(rec_sen_neg[[x]]) <- 0
   diag(rec_sen_neu[[x]]) <- 0
-  
   rec_sen[[x]] <- rowSums(rec_sen[[x]])
   rec_sen_pos[[x]] <- rowSums(rec_sen_pos[[x]])
   rec_sen_neg[[x]] <- rowSums(rec_sen_neg[[x]])
@@ -228,7 +225,55 @@ for(x in seq_along(rec_sen)){
 
 View(gossip_sum)
 
-# Need to exclude networks F106b-c-d (gossip reported by less than 1/3 of the sample in these three units)
+########################################################################################################################
+
+# SOME DESCRIPTIVES OF THE GOSSIP DATA
+
+desc_receiver <- vector('list',length=length(gossip_cube))
+for(i in seq_along(gossip_cube)){
+  desc_receiver[[i]] <- as.data.frame(matrix(NA,nrow=nrow(gossip_cube[[i]]),ncol=5))
+  rownames(desc_receiver[[i]]) <- rownames(gossip_cube[[i]])
+  colnames(desc_receiver[[i]]) <- c('network','dyads','dyads_pos','dyads_neg','dyads_neu')
+  desc_receiver[[i]]$network <- names(gossip_cube)[i]
+}
+
+for(x in seq_along(desc_receiver)){
+  for(i in 1:nrow(desc_receiver[[x]])){
+    # Receiver-specific 
+    desc_receiver[[x]]$dyads[i] <- sum(gos[[x]][,i,],na.rm=TRUE)
+    desc_receiver[[x]]$dyads_pos[i] <- sum(gos_pos[[x]][,i,],na.rm=TRUE)
+    desc_receiver[[x]]$dyads_neg[i] <- sum(gos_neg[[x]][,i,],na.rm=TRUE)
+    desc_receiver[[x]]$dyads_neu[i] <- sum(gos_neu[[x]][,i,],na.rm=TRUE)
+  }
+}
+
+desc_receiver <- do.call('rbind',desc_receiver)
+desc_receiver$subject <- rownames(desc_receiver)
+
+# Visualisations
+grid.background <- theme_bw()+
+  theme(plot.background=element_blank(),panel.grid.minor=element_blank(),panel.border=element_blank())+
+  theme(axis.line=element_line(color='black'))+
+  theme(strip.text.x=element_text(colour='white',face='bold'))+
+  theme(strip.background=element_rect(fill='black'))+
+  theme(axis.text.x = element_blank())
+
+jpeg(filename='Receiver-specific gossip.jpeg',width=11,height=6,units='in',res=1000)
+ggplot(data=desc_receiver)+
+  geom_point(aes(x=subject,y=dyads_neu),colour='royalblue',size=2)+
+  geom_point(aes(x=subject,y=dyads_neu),colour='white',size=1,shape='N')+
+  geom_point(aes(x=subject,y=dyads_neg),colour='red',size=2)+
+  geom_point(aes(x=subject,y=dyads_neg),size=2,shape='-')+
+  geom_point(aes(x=subject,y=dyads_pos),colour='chartreuse',size=2)+
+  geom_point(aes(x=subject,y=dyads_pos),size=2,shape='+')+
+  facet_wrap(~network,nrow=3,scales='free')+
+  xlab('Respondent')+ylab('Sender-target dyads reported')+
+  grid.background
+dev.off()
+
+########################################################################################################################
+
+# Need to exclude networks F106b-c-d (gossip reported by less than 1/2 of the sample in these three units)
 excl <- c('F106b','F106c','F106d')
 attributes <- attributes[attributes$group %!in% excl,]
 missing_respondents <- missing_respondents[missing_respondents %in% attributes$responder]
@@ -241,89 +286,6 @@ gossip_sum <- gossip_sum[rownames(gossip_sum) %!in% excl,]
 networks_mtx <- networks_mtx[organisation_ID %!in% excl]
 org_subject <- org_subject[organisation_ID %!in% excl]
 organisation_ID <- organisation_ID[organisation_ID %!in% excl]
-
-########################################################################################################################
-
-# SOME DESCRIPTIVES OF THE GOSSIP DATA
-
-desc_receiver <- vector('list',length=length(gossip_cube))
-for(i in seq_along(gossip_cube)){
-  desc_receiver[[i]] <- as.data.frame(matrix(NA,nrow=nrow(gossip_cube[[i]]),ncol=9))
-  rownames(desc_receiver[[i]]) <- rownames(gossip_cube[[i]])
-  colnames(desc_receiver[[i]]) <- c('network','dyads','gossip','dyads_pos','gossip_pos','dyads_neg','gossip_neg',
-                                    'dyads_neu','gossip_neu')
-  desc_receiver[[i]]$network <- names(gossip_cube)[i]
-}
-
-for(x in seq_along(desc_receiver)){
-  for(i in 1:nrow(desc_receiver[[x]])){
-    # Receiver-specific 
-    desc_receiver[[x]]$dyads[i] <- sum(gos[[x]][,i,],na.rm=TRUE)
-    desc_receiver[[x]]$gossip[i] <- sna::grecip(gos[[x]][,i,],measure='edgewise')
-    desc_receiver[[x]]$dyads_pos[i] <- sum(gos_pos[[x]][,i,],na.rm=TRUE)
-    desc_receiver[[x]]$gossip_pos[i] <- sna::grecip(gos_pos[[x]][,i,],measure='edgewise')
-    desc_receiver[[x]]$dyads_neg[i] <- sum(gos_neg[[x]][,i,],na.rm=TRUE)
-    desc_receiver[[x]]$gossip_neg[i] <- sna::grecip(gos_neg[[x]][,i,],measure='edgewise')
-    desc_receiver[[x]]$dyads_neu[i] <- sum(gos_neu[[x]][,i,],na.rm=TRUE)
-    desc_receiver[[x]]$gossip_neu[i] <- sna::grecip(gos_neu[[x]][,i,],measure='edgewise')
-  }
-}
-
-desc_receiver <- do.call('rbind',desc_receiver)
-
-# Label for x-axis
-desc_receiver$subject <- rownames(desc_receiver) 
-for(i in 1:nrow(desc_receiver)){
-  if(desc_receiver$network[i] %in% c('A104','F101','F106a')){
-    desc_receiver$subject[i] <- substr(desc_receiver$subject[i],5,6)
-  }else if(desc_receiver$network[i] %in% c('F105','P102')){
-    desc_receiver$subject[i] <- substr(desc_receiver$subject[i],4,5)
-  }else{
-    desc_receiver$subject[i] <- substr(desc_receiver$subject[i],6,7)
-  }
-}
-
-desc_receiver[desc_receiver$subject == 32,]$subject <- 15
-desc_receiver[desc_receiver$subject == 33,]$subject <- 16
-
-# Reciprocity as discrete for visualisation purposes
-mutual_bins <- function(x){
-  x <- ifelse(x >= .9,'[90%,100%]',
-              ifelse(x >= .8,'[80%,90%)',
-                     ifelse(x >= .7,'[70%,80%)',
-                            ifelse(x >= .6,'[60%,70%]',
-                                   ifelse(x >= .5,'[50%,60%)',
-                                          ifelse(x >= .4,'[40%,50%)',
-                                                 ifelse(x >= .3,'[30%,40%)',
-                                                        ifelse(x >= .2,'[20%,30%)',
-                                                               ifelse(x >= .1,'[10%,20%)','[0%,10%)')))))))))
-  return(x)
-}
-
-desc_receiver$gossip_pos <- mutual_bins(desc_receiver$gossip_pos)
-desc_receiver$gossip_neg <- mutual_bins(desc_receiver$gossip_neg)
-desc_receiver$gossip_neu <- mutual_bins(desc_receiver$gossip_neu)
-
-# Visualisations
-grid.background <- theme_bw()+
-  theme(plot.background=element_blank(),panel.grid.minor=element_blank(),panel.border=element_blank())+
-  theme(axis.line=element_line(color='black'))+
-  theme(strip.text.x=element_text(colour='white',face='bold'))+
-  theme(strip.background=element_rect(fill='black'))
-
-jpeg(filename='Receiver-specific gossip.jpeg',width=11,height=6,units='in',res=1000)
-ggplot(data=desc_receiver)+
-  geom_point(aes(x=subject,y=dyads_pos,colour=gossip_pos),size=4,alpha=1/3)+
-  geom_point(aes(x=subject,y=dyads_neg,colour=gossip_neg),size=4,alpha=1/3)+
-  geom_point(aes(x=subject,y=dyads_neu,colour=gossip_neu),size=4,alpha=1/3)+
-  geom_point(aes(x=subject,y=dyads_pos),colour='black',size=4,shape='+')+
-  geom_point(aes(x=subject,y=dyads_neg),colour='black',size=4,shape='-')+
-  geom_point(aes(x=subject,y=dyads_neu),colour='white',size=2.5,shape='N')+
-  facet_wrap(~network,nrow=3,scales='free')+
-  scale_colour_manual(name='Mutual',values=colorRampPalette(c('royalblue','red'))(10))+
-  xlab('Receiver')+ylab('Sender-target dyads')+
-  grid.background
-dev.off()
 
 ########################################################################################################################
 
@@ -351,8 +313,8 @@ length(unique(inconst_gos$target)) # 36 unique targets
 ########################################################################################################################
 
 # Removal of unnecessary objects
-rm(rec_sen);rm(rec_sen_pos);rm(rec_sen_neg);rm(rec_sen_neu);rm(desc_receiver);rm(gos);rm(mutual_bins);rm(excl)
-rm(grid.background);rm(gos_pos);rm(gos_neg);rm(gos_neu);rm(intersect_posneg);rm(inconst_gos);rm(i);rm(j);rm(k);rm(x)
+rm(rec_sen);rm(rec_sen_pos);rm(rec_sen_neg);rm(rec_sen_neu);rm(desc_receiver);rm(gos);rm(excl);rm(i);rm(j);rm(k);rm(x)
+rm(grid.background);rm(gos_pos);rm(gos_neg);rm(gos_neu);rm(intersect_posneg);rm(inconst_gos)
 
 # Save image
 save.image('tidieddata.RData')
