@@ -62,27 +62,27 @@ matrix_selection <- function(list_mtx_overlap){
   items_to_cluster <- rownames(list_mtx_overlap[[1]])
   clust_ranks <- vector('list',length=length(items_to_cluster))
   names(clust_ranks) <- items_to_cluster
-    
+  
   for(i in seq_along(clust_ranks)){
     clust_ranks[[i]] <- matrix(NA,nrow=length(items_to_cluster),ncol=length(organisation_ID),
                                dimnames=list(names(clust_ranks),organisation_ID))
   }
-    
+  
   for(i in seq_along(list_mtx_overlap)){
     for(j in 1:nrow(list_mtx_overlap[[i]])){
       clust_ranks[[j]][,i] <- rank(list_mtx_overlap[[i]][j,]) # ranks by row of the matrix
     }
   }
-    
+  
   for(i in seq_along(clust_ranks)){
     clust_ranks[[i]] <- clust_ranks[[i]][-i,] # remove the row that is the item itself
     clust_ranks[[i]] <- kendall(clust_ranks[[i]],TRUE)$value # Kendall W for concordance
   }
-    
+  
   min_k <- min(unlist(clust_ranks))
   item_to_exclude <- which.min(unlist(clust_ranks))
   item_name <- names(clust_ranks)[which.min(unlist(clust_ranks))]
-    
+  
   print(paste('Exclude item ',item_to_exclude,' (',item_name,'). Kendall W = ', round(min_k,3),sep=''))
 }
 
@@ -237,9 +237,9 @@ ggplot(data=degree_sum)+
   geom_point(aes(x=cutoff,y=degree,),colour='black',size=4)+
   geom_point(aes(x=cutoff,y=degree,colour=Unit),size=3)+
   geom_vline(data=data.frame(xint=c(NA,3,NA),tie=c('affective','negative','respect')),
-             aes(xintercept=xint),linetype='solid',colour='red',size=12,alpha=.33)+
-  geom_hline(data=data.frame(yint=c(3,NA,NA),tie=c('affective','negative','respect')),
-             aes(yintercept=yint),linetype='solid',colour='red',size=12,alpha=.33)+
+             aes(xintercept=xint),linetype='solid',colour='red',size=14,alpha=.33)+
+  geom_hline(data=data.frame(yint=c(6.85,NA,NA),tie=c('affective','negative','respect')),
+             aes(yintercept=yint),linetype='solid',colour='red',size=14,alpha=.33)+
   facet_wrap(~tie,nrow=1,scales='free_x')+
   xlab('Number of network items')+ylab('Average out-degree in the composite network')+
   scale_x_continuous(breaks=1:8)+
@@ -252,16 +252,7 @@ networks_mtx <- comp_networks
 
 for(i in seq_along(networks_mtx)){
   networks_mtx[[i]]$respect <- NULL # respect excluded
-  
   if(i == 3){
-    for(j in seq_along(networks_mtx[[i]])){
-      if(j == 1){
-        networks_mtx[[i]][[j]] <- 1*(networks_mtx[[i]][[j]] >= 8) # affective
-      }else{
-        networks_mtx[[i]][[j]] <- 1*(networks_mtx[[i]][[j]] >= 3) # negative
-      }
-    }
-  }else{
     for(j in seq_along(networks_mtx[[i]])){
       if(j == 1){
         networks_mtx[[i]][[j]] <- 1*(networks_mtx[[i]][[j]] >= 7) # affective
@@ -269,12 +260,16 @@ for(i in seq_along(networks_mtx)){
         networks_mtx[[i]][[j]] <- 1*(networks_mtx[[i]][[j]] >= 3) # negative
       }
     }
+  }else{
+    for(j in seq_along(networks_mtx[[i]])){
+      if(j == 1){
+        networks_mtx[[i]][[j]] <- 1*(networks_mtx[[i]][[j]] >= 5) # affective
+      }else{
+        networks_mtx[[i]][[j]] <- 1*(networks_mtx[[i]][[j]] >= 3) # negative
+      }
+    }
   }
 }
-
-# In unit F103, one subject has a massive outdegree (27), which was sent to missing
-rowSums(networks_mtx$F103$affective == 1,na.rm=TRUE)
-networks_mtx$F103$affective['1F03013',] <- NA 
 
 # Inspection the overlap between type of ties
 mtx_overlap <- networks_mtx 
@@ -304,11 +299,11 @@ for(i in seq_along(networks_mtx)){
   }
 }
 
-# Max-symmetrisation of the networks
+# Min-symmetrisation of the networks (only reciprocated ties)
 sym_mtx <- networks_mtx
 for(x in seq_along(sym_mtx)){
   for(y in seq_along(sym_mtx[[x]])){
-    sym_mtx[[x]][[y]] <- sna::symmetrize(1*(!is.na(sym_mtx[[x]][[y]]) & sym_mtx[[x]][[y]]==1),rule='weak')
+    sym_mtx[[x]][[y]] <- sna::symmetrize(1*(!is.na(sym_mtx[[x]][[y]]) & sym_mtx[[x]][[y]]==1),rule='strong')
     rownames(sym_mtx[[x]][[y]]) <- colnames(sym_mtx[[x]][[y]]) <- rownames(networks_mtx[[x]][[y]])
     # Allocation of missing data
     diag(sym_mtx[[x]][[y]]) <- NA
@@ -323,6 +318,12 @@ for(x in seq_along(sym_mtx)){
   }
 }
 
+# For non-respondants, we kept their incoming ties as reciprocated
+sym_mtx$F103$affective[,'1F03002'] <- sym_mtx$F103$affective['1F03002',] <- networks_mtx$F103$affective[,'1F03002']
+sym_mtx$F103$affective[,'1F03016'] <- sym_mtx$F103$affective['1F03016',] <- networks_mtx$F103$affective[,'1F03016']
+sym_mtx$F103$affective[,'1F03026'] <- sym_mtx$F103$affective['1F03026',] <- networks_mtx$F103$affective[,'1F03026']
+sym_mtx$P102$affective[,'1P106'] <- sym_mtx$P102$affective['1P106',] <- networks_mtx$P102$affective[,'1P106']
+
 # Visualisation of the networks
 ntw_plot <- sym_mtx
 for(i in seq_along(ntw_plot)){
@@ -331,19 +332,22 @@ for(i in seq_along(ntw_plot)){
   ntw_plot[[i]]$group <- graph_from_adjacency_matrix(ntw_plot[[i]]$group,mode='undirected',diag=FALSE)
   ntw_plot[[i]]$group <- igraph::cluster_edge_betweenness(ntw_plot[[i]]$group) # clustering
   # Show both affective and negative ties
-  ntw_plot[[i]]$vis <- graph_from_adjacency_matrix(ntw_plot[[i]]$affective - ntw_plot[[i]]$negative,
-                                                   mode='undirected',diag=FALSE,weighted=TRUE)
+  ntw_plot[[i]]$vis <- graph_from_adjacency_matrix(sym_mtx[[i]]$affective - networks_mtx[[i]]$negative,
+                                                   mode='directed',diag=FALSE,weighted=TRUE)
   # Layout based only on affective ties
   ntw_plot[[i]]$layout <- layout_with_kk(graph_from_adjacency_matrix(ntw_plot[[i]]$affective,mode='directed'))
   # Customisation of nodes and ties
-  V(ntw_plot[[i]]$vis)$color <- 'darkgrey'
+  V(ntw_plot[[i]]$vis)$color <- ifelse(attributes[attributes$group == organisation_ID[[i]],]$woman == 1,'magenta','skyblue')
+  V(ntw_plot[[i]]$vis)$shape <- ifelse(attributes[attributes$group == organisation_ID[[i]],]$hr_leader == 1,'square','circle')
+  V(ntw_plot[[i]]$vis)$size <- ifelse(attributes[attributes$group == organisation_ID[[i]],]$hr_leader == 1,10,7)
+  
   E(ntw_plot[[i]]$vis)$color <- as.character(factor(E(ntw_plot[[i]]$vis)$weight,
                                                     levels=c(-1,1),labels=c('red','darkgreen')))
-  E(ntw_plot[[i]]$vis)$width <- as.character(factor(E(ntw_plot[[i]]$vis)$weight,levels=c(-1,1),labels=c(1,2)))
+  E(ntw_plot[[i]]$vis)$width <- 1
   # Visualisation
   jpeg(filename=paste('Unit',i,'.jpeg',sep=''),width=4,height=4,units='in',res=1000)
   plot(ntw_plot[[i]]$vis,mark.groups=ntw_plot[[i]]$group,
-       vertex.label=NA,vertex.size=8,layout=ntw_plot[[i]]$layout)
+       vertex.label=NA,edge.arrow.size=.1,layout=ntw_plot[[i]]$layout)
   dev.off()
 }
 
