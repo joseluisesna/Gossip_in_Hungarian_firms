@@ -15,6 +15,17 @@ attributes <- attributes[,1:75] # # exclusion of network variables from attribut
 
 ########################################################################################################################
 
+# Leaders per setting (fix)
+for(i in 1:nrow(attributes)){
+  if(!is.na(stringr::str_detect(attributes$hr_job[[i]],' '))){
+    if(stringr::str_detect(attributes$hr_job[[i]],c('Manager|Chief|Director|director|leader'))){
+      attributes$hr_leader[[i]] <- 1
+    }
+  }
+}
+
+########################################################################################################################
+
 # Some general information
 organisation_ID <- unique(na.omit(attributes$group)) # 9 units or groups
 employee_ID <- attributes$responder # N=225, but observe there are 2 duplicated employees: 1F6032 and 1F6033
@@ -74,7 +85,7 @@ for(i in 1:nrow(gossip)){
   if(gossip$sender[i] %in% org_subject[[gossip$group[[i]]]] &
      gossip$receiver[i] %in% org_subject[[gossip$group[[i]]]] &
      gossip$target[i] %in% org_subject[[gossip$group[[i]]]])
-  valid_triplets[i] <- TRUE
+    valid_triplets[i] <- TRUE
 }
 gossip <- gossip[valid_triplets,]
 
