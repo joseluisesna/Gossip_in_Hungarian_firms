@@ -15,9 +15,9 @@ load('tidieddata.RData')
 
 # COMPOSITVE NETWORK CREATION (FOLLOWING VOROS & SNIJDERS, 2017)
 
-# 1) Exclusion of networks concerning knowledge about others' earnings (networks 15:23)
+# 1) Exclusion of networks concerning knowledge about others' earnings (networks 15:23) and gossip (42)
 for(i in seq_along(networks_mtx)){
-  networks_mtx[[i]] <- networks_mtx[[i]][c(1:14,24:43)]
+  networks_mtx[[i]] <- networks_mtx[[i]][c(1:14,24:41,43)]
 }
 
 # 2) When the matrices capture grades of the same dimension, binarization
@@ -31,7 +31,7 @@ for(i in seq_along(networks_mtx)){
 }
 
 for(i in seq_along(networks_mtx)){
-  networks_mtx[[i]] <- networks_mtx[[i]][c(1:4,10:27,33:36)]
+  networks_mtx[[i]] <- networks_mtx[[i]][c(1:4,10:27,33:35)]
 }
 
 # 3) Matrix overlap (Jaccard indices) between each pair of matrices
@@ -89,7 +89,7 @@ matrix_selection <- function(list_mtx_overlap){
 # Application of the function
 matrix_selection(mtx_overlap)
 for(i in seq_along(mtx_overlap)){
-  mtx_overlap[[i]] <- mtx_overlap[[i]][-24,-24]
+  mtx_overlap[[i]] <- mtx_overlap[[i]][-23,-23]
 }
 
 matrix_selection(mtx_overlap)
@@ -115,8 +115,7 @@ rownames(mean_jaccard) <- c('Deserve wage increase','Cooperate well','Cooperate 
                             'Other colleagues despise them','Other colleagues appreciate them','Are neutral to me',
                             'Are trustworthy','I appreciate them','Share negative information about me',
                             'Are not a friend','Does not belong to the team','Are not suitable for the job',
-                            'Are popular','I turn for help','Receive personal information',
-                            'Regular personal conversations','Regular work conversations')
+                            'Are popular','I turn for help','Regular personal conversations','Regular work conversations')
 colnames(mean_jaccard) <- rownames(mean_jaccard)
 
 # Hierarchical clustering with Ward's method
@@ -131,13 +130,13 @@ plot(ape_model,cex=1,label.offset=.1,tip.color=colours[cutrees])
 dev.off()
 
 # 6) Check the fit with a heatmap (using the order of the hierarchical clustering above)
-clust_order <- c('Receive personal information','Are popular','I turn for help',
-                 'Other colleagues ask them for help','I appreciate them','Other colleagues appreciate them',
-                 'Other colleagues listen to them','I listen to them','Are trustworthy','Do their job well',
-                 'Are a friend','Cooperate well','Cooperate with job duties','Deserve wage increase',
-                 'Regular work conversations','Regular personal conversations','Share negative information about me',
-                 'Deserve wage cut','Does not belong to the team','Other colleagues despise them',
-                 'Are not suitable for the job','Are not a friend','Would not cooperate','Are neutral to me')
+clust_order <- c('I turn for help','Other colleagues ask them for help','I appreciate them',
+                 'Other colleagues appreciate them','Other colleagues listen to them','I listen to them','Are popular',
+                 'Are trustworthy','Do their job well','Are a friend','Cooperate well','Cooperate with job duties',
+                 'Deserve wage increase','Regular work conversations','Regular personal conversations',
+                 'Share negative information about me','Deserve wage cut','Does not belong to the team',
+                 'Other colleagues despise them','Are not suitable for the job','Are not a friend','Would not cooperate',
+                 'Are neutral to me')
 mean_jaccard2 <- matrix(NA,nrow=nrow(mean_jaccard),ncol=ncol(mean_jaccard),dimnames=list(clust_order,clust_order))
 
 for(i in rownames(mean_jaccard2)){
@@ -151,20 +150,20 @@ levelplot(mean_jaccard2,cuts=7,at=seq(0,.7,.1),col.regions=heat.colors(100),
           xlab='',ylab='',scales=list(x=list(rot=90)),contour=FALSE,
           panel = function(...){
             panel.levelplot(...)
-            panel.abline(h = 8.5)
-            panel.abline(v = 8.5)
-            panel.abline(h = 16.5)
-            panel.abline(v = 16.5)
-            panel.abline(h = 23.5)
-            panel.abline(v = 23.5)
+            panel.abline(h = 7.5)
+            panel.abline(v = 7.5)
+            panel.abline(h = 15.5)
+            panel.abline(v = 15.5)
+            panel.abline(h = 22.5)
+            panel.abline(v = 22.5)
           })
 dev.off()
 
 # 7) Composite networks
 # Three latent dimensions: affection, respect, and negative
-affective <- c('wage_increasing','cooperate_well','cooperate_job_duties','friend','does_job_well','trustworthy',
+expressive <- c('wage_increasing','cooperate_well','cooperate_job_duties','friend','does_job_well','trustworthy',
                'regular_personal_conversation','regular_work_conversation')
-respect <- c('popular','received_personal_info','listen_to_her','colleagues_listen_to_her','colleagues_ask_for_her_help',
+respect <- c('popular','listen_to_her','colleagues_listen_to_her','colleagues_ask_for_her_help',
              'colleagues_appreciate','appreciation','turn_for_her_help')
 negative <- c('would_not_cooperate','wage_reduction','colleagues_despise','shares_negative_info_about_me','not_friend',
               'not_suitable_for_job','belong_to_team')
@@ -174,14 +173,14 @@ names(comp_networks) <- names(networks_mtx)
 
 for(i in seq_along(comp_networks)){
   comp_networks[[i]] <- vector('list',length=3)
-  names(comp_networks[[i]]) <- c('affective','respect','negative')
+  names(comp_networks[[i]]) <- c('expressive','respect','negative')
   for(j in seq_along(comp_networks[[i]])){
     if(j == 1){
       comp_networks[[i]][[j]] <- array(NA,dim=c(rep(nrow(networks_mtx[[i]][[1]]),2),8),
                                        dimnames=list(rownames(networks_mtx[[i]][[1]]),rownames(networks_mtx[[i]][[1]]),
-                                                     affective))   
+                                                     expressive))   
     }else if(j == 2){
-      comp_networks[[i]][[j]] <- array(NA,dim=c(rep(nrow(networks_mtx[[i]][[1]]),2),8),
+      comp_networks[[i]][[j]] <- array(NA,dim=c(rep(nrow(networks_mtx[[i]][[1]]),2),7),
                                        dimnames=list(rownames(networks_mtx[[i]][[1]]),rownames(networks_mtx[[i]][[1]]),
                                                      respect)) 
     }else{
@@ -222,7 +221,7 @@ for(i in seq_along(cuts)){
 degree_sum <- as.data.frame(do.call('rbind',cuts))
 degree_sum$Unit <- rep(organisation_ID,8)
 degree_sum$cutoff <- rep(1:8,each=6)
-degree_sum <- tidyr::gather(degree_sum,key="tie",value='degree',c('affective','respect','negative'))
+degree_sum <- tidyr::gather(degree_sum,key="tie",value='degree',c('expressive','respect','negative'))
 
 # Visualisation
 grid.background <- theme_bw()+
@@ -236,10 +235,10 @@ ggplot(data=degree_sum)+
   geom_line(aes(x=cutoff,y=degree,group=Unit,colour=Unit),linetype='solid',size=1.5)+
   geom_point(aes(x=cutoff,y=degree,),colour='black',size=4)+
   geom_point(aes(x=cutoff,y=degree,colour=Unit),size=3)+
-  geom_vline(data=data.frame(xint=c(NA,3,NA),tie=c('affective','negative','respect')),
-             aes(xintercept=xint),linetype='solid',colour='red',size=14,alpha=.33)+
-  geom_hline(data=data.frame(yint=c(6.85,NA,NA),tie=c('affective','negative','respect')),
-             aes(yintercept=yint),linetype='solid',colour='red',size=14,alpha=.33)+
+  geom_vline(data=data.frame(xint=c(NA,2,NA),tie=c('expressive','negative','respect')),
+             aes(xintercept=xint),linetype='solid',colour='red',size=6,alpha=.33)+
+  geom_vline(data=data.frame(xint=c(6,NA,NA),tie=c('expressive','negative','respect')),
+             aes(xintercept=xint),linetype='solid',colour='red',size=6,alpha=.33)+
   facet_wrap(~tie,nrow=1,scales='free_x')+
   xlab('Number of network items')+ylab('Average out-degree in the composite network')+
   scale_x_continuous(breaks=1:8)+
@@ -252,21 +251,11 @@ networks_mtx <- comp_networks
 
 for(i in seq_along(networks_mtx)){
   networks_mtx[[i]]$respect <- NULL # respect excluded
-  if(i == 3){
-    for(j in seq_along(networks_mtx[[i]])){
-      if(j == 1){
-        networks_mtx[[i]][[j]] <- 1*(networks_mtx[[i]][[j]] >= 7) # affective
-      }else{
-        networks_mtx[[i]][[j]] <- 1*(networks_mtx[[i]][[j]] >= 3) # negative
-      }
-    }
-  }else{
-    for(j in seq_along(networks_mtx[[i]])){
-      if(j == 1){
-        networks_mtx[[i]][[j]] <- 1*(networks_mtx[[i]][[j]] >= 5) # affective
-      }else{
-        networks_mtx[[i]][[j]] <- 1*(networks_mtx[[i]][[j]] >= 3) # negative
-      }
+  for(j in seq_along(networks_mtx[[i]])){
+    if(j == 1){
+      networks_mtx[[i]][[j]] <- 1*(networks_mtx[[i]][[j]] >= 6) # expressive
+    }else{
+      networks_mtx[[i]][[j]] <- 1*(networks_mtx[[i]][[j]] >= 3) # negative
     }
   }
 }
@@ -292,7 +281,7 @@ mtx_overlap
 for(i in seq_along(networks_mtx)){
   for(j in seq_along(networks_mtx[[i]])){
     d <- round(as.vector(sna::gden(networks_mtx[[i]][[j]])),2)
-    m <- round(as.vector(sna::grecip(networks_mtx[[i]][[j]])),2)
+    m <- round(as.vector(sna::grecip(networks_mtx[[i]][[j]],measure='edgewise')),2)
     output <- data.frame(c(d,m),row.names=c('Density','Mutual'))
     colnames(output) <- paste(names(networks_mtx)[[i]],names(networks_mtx[[i]])[[j]])
     print(output)
@@ -319,23 +308,38 @@ for(x in seq_along(sym_mtx)){
 }
 
 # For non-respondants, we kept their incoming ties as reciprocated
-sym_mtx$F103$affective[,'1F03002'] <- sym_mtx$F103$affective['1F03002',] <- networks_mtx$F103$affective[,'1F03002']
-sym_mtx$F103$affective[,'1F03016'] <- sym_mtx$F103$affective['1F03016',] <- networks_mtx$F103$affective[,'1F03016']
-sym_mtx$F103$affective[,'1F03026'] <- sym_mtx$F103$affective['1F03026',] <- networks_mtx$F103$affective[,'1F03026']
-sym_mtx$P102$affective[,'1P106'] <- sym_mtx$P102$affective['1P106',] <- networks_mtx$P102$affective[,'1P106']
+sym_mtx$F103$expressive[,'1F03002'] <- sym_mtx$F103$expressive['1F03002',] <- networks_mtx$F103$expressive[,'1F03002']
+sym_mtx$F103$expressive[,'1F03016'] <- sym_mtx$F103$expressive['1F03016',] <- networks_mtx$F103$expressive[,'1F03016']
+sym_mtx$F103$expressive[,'1F03026'] <- sym_mtx$F103$expressive['1F03026',] <- networks_mtx$F103$expressive[,'1F03026']
+sym_mtx$P102$expressive[,'1P106'] <- sym_mtx$P102$expressive['1P106',] <- networks_mtx$P102$expressive[,'1P106']
 
 # Visualisation of the networks
 ntw_plot <- sym_mtx
 for(i in seq_along(ntw_plot)){
+  ntw_plot[[i]]$negative <- networks_mtx[[i]]$negative
+}
+
+# Some descriptive (density and mutual)
+for(i in seq_along(ntw_plot)){
+  for(j in seq_along(ntw_plot[[i]])){
+    d <- round(as.vector(sna::gden(ntw_plot[[i]][[j]])),2)
+    m <- round(as.vector(sna::grecip(ntw_plot[[i]][[j]],measure='edgewise')),2)
+    output <- data.frame(c(d,m),row.names=c('Density','Mutual'))
+    colnames(output) <- paste(names(ntw_plot)[[i]],names(ntw_plot[[i]])[[j]])
+    print(output)
+  }
+}
+
+for(i in seq_along(ntw_plot)){
   # Clustering using Newman's method based on positive ties only
-  ntw_plot[[i]]$group <- ntw_plot[[i]]$affective 
+  ntw_plot[[i]]$group <- ntw_plot[[i]]$expressive 
   ntw_plot[[i]]$group <- graph_from_adjacency_matrix(ntw_plot[[i]]$group,mode='undirected',diag=FALSE)
   ntw_plot[[i]]$group <- igraph::cluster_edge_betweenness(ntw_plot[[i]]$group) # clustering
-  # Show both affective and negative ties
-  ntw_plot[[i]]$vis <- graph_from_adjacency_matrix(sym_mtx[[i]]$affective - networks_mtx[[i]]$negative,
+  # Show both expressive and negative ties
+  ntw_plot[[i]]$vis <- graph_from_adjacency_matrix(ntw_plot[[i]]$expressive - ntw_plot[[i]]$negative,
                                                    mode='directed',diag=FALSE,weighted=TRUE)
-  # Layout based only on affective ties
-  ntw_plot[[i]]$layout <- layout_with_kk(graph_from_adjacency_matrix(ntw_plot[[i]]$affective,mode='directed'))
+  # Layout based only on expressive ties
+  ntw_plot[[i]]$layout <- layout_with_kk(graph_from_adjacency_matrix(ntw_plot[[i]]$expressive,mode='directed'))
   # Customisation of nodes and ties
   V(ntw_plot[[i]]$vis)$color <- ifelse(attributes[attributes$group == organisation_ID[[i]],]$woman == 1,'magenta','skyblue')
   V(ntw_plot[[i]]$vis)$shape <- ifelse(attributes[attributes$group == organisation_ID[[i]],]$hr_leader == 1,'square','circle')
@@ -355,7 +359,7 @@ for(i in seq_along(ntw_plot)){
 
 # Removal of unnecessary objects
 rm(cluster_model);rm(ape_model);rm(mean_jaccard);rm(mean_jaccard2);rm(networks_available);rm(clust_order);rm(Jaccard)
-rm(matrix_selection);rm(mtx);rm(i);rm(j);rm(k);rm(colours);rm(cutrees);rm(cuts);rm(affective);rm(respect);rm(negative)
+rm(matrix_selection);rm(mtx);rm(i);rm(j);rm(k);rm(colours);rm(cutrees);rm(cuts);rm(expressive);rm(respect);rm(negative)
 rm(items);rm(degree_sum);rm(grid.background);rm(mtx_overlap);rm(ntw_plot);rm(x);rm(y);rm(d);rm(m);rm(output)
 
 # Save image
