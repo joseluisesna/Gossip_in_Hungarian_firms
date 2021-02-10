@@ -8,7 +8,7 @@
 rm(list=ls())
 
 # R PACKAGES REQUIRED
-library(igraph)
+library(ggplot2);library(igraph)
 
 ########################################################################################################################
 
@@ -142,6 +142,8 @@ for(i in seq_along(mtx_50posgos)){
     x <- graph_from_adjacency_matrix(1*(mtx_50posgos[[i]][[j]] > .95),mode='undirected',diag=FALSE)
     layo <- layout_with_fr(x)
     groups <- cluster_edge_betweenness(x)
+    
+    
     y <- graph_from_adjacency_matrix(1*(mtx_50posgos[[i]][[j]] > .95) - 1*(mtx_50posgos[[i]][[j]] < .05),
                                      mode='undirected',weighted=TRUE,diag=FALSE)
     E(y)$color <- as.character(factor(E(y)$weight,levels=c(-1,1),labels=c('red','navyblue')))
