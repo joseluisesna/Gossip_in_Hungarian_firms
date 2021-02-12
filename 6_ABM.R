@@ -13,7 +13,14 @@ library(ggplot2);library(igraph)
 ########################################################################################################################
 
 # gossip-based network evolution algorithm
-ntw_evolution <- function(matrix,reps=2500,force=.1,pos_gossip=.5,n_receivers=5,n_targets=5){
+ntw_evolution <- function(matrix,
+                          reps=2000, # iterations
+                          pos_gossip=.5, # proportion of positive gossip
+                          n_targets=3, # number of potential targets
+                          n_receivers=3, # number of potential receivers (echo)
+                          force_sr=.1, # effect on the sender-receiver tie
+                          force_st=.1, # effect on the sender-target tie
+                          force_rt=.1){ # effect on the receiver-target tie
   obj <- vector('list',length=reps)
   obj[[1]] <- matrix
   # the gossip procedure
@@ -32,13 +39,13 @@ ntw_evolution <- function(matrix,reps=2500,force=.1,pos_gossip=.5,n_receivers=5,
       receiver <- as.numeric(sample(potential_receivers,1))
       
       # SR: attraction force
-      sr_effect <- 1/(1+exp(-(log(obj[[i]][sender,receiver]/(1-obj[[i]][sender,receiver]))+force))) 
+      sr_effect <- 1/(1+exp(-(log(obj[[i]][sender,receiver]/(1-obj[[i]][sender,receiver]))+force_sr))) 
       obj[[i]][sender,receiver] <- obj[[i]][receiver,sender] <- sr_effect
       # ST: repulsion force
-      st_effect <- 1/(1+exp(-(log(obj[[i]][sender,target]/(1-obj[[i]][sender,target]))-force))) 
+      st_effect <- 1/(1+exp(-(log(obj[[i]][sender,target]/(1-obj[[i]][sender,target]))-force_st))) 
       obj[[i]][sender,target] <- obj[[i]][target,sender] <- st_effect
       # RT: repulsion force
-      rt_effect <- 1/(1+exp(-(log(obj[[i]][receiver,target]/(1-obj[[i]][receiver,target]))-force))) 
+      rt_effect <- 1/(1+exp(-(log(obj[[i]][receiver,target]/(1-obj[[i]][receiver,target]))-force_rt))) 
       obj[[i]][receiver,target] <- obj[[i]][target,receiver] <- rt_effect
       
     }else{ # positive gossip 
@@ -49,13 +56,13 @@ ntw_evolution <- function(matrix,reps=2500,force=.1,pos_gossip=.5,n_receivers=5,
       potential_receivers <- order(obj[[i-1]][target,-c(sender,target)],decreasing=TRUE)[1:n_receivers] 
       receiver <- as.numeric(sample(potential_receivers,1))
       # SR: attraction force
-      sr_effect <- 1/(1+exp(-(log(obj[[i]][sender,receiver]/(1-obj[[i]][sender,receiver]))+force))) 
+      sr_effect <- 1/(1+exp(-(log(obj[[i]][sender,receiver]/(1-obj[[i]][sender,receiver]))+force_sr))) 
       obj[[i]][sender,receiver] <- obj[[i]][receiver,sender] <- sr_effect
       # ST: attraction force
-      st_effect <- 1/(1+exp(-(log(obj[[i]][sender,target]/(1-obj[[i]][sender,target]))+force))) 
+      st_effect <- 1/(1+exp(-(log(obj[[i]][sender,target]/(1-obj[[i]][sender,target]))+force_st))) 
       obj[[i]][sender,target] <- obj[[i]][target,sender] <- st_effect
       # RT: attraction force
-      rt_effect <- 1/(1+exp(-(log(obj[[i]][receiver,target]/(1-obj[[i]][receiver,target]))+force))) 
+      rt_effect <- 1/(1+exp(-(log(obj[[i]][receiver,target]/(1-obj[[i]][receiver,target]))+force_rt))) 
       obj[[i]][receiver,target] <- obj[[i]][target,receiver] <- rt_effect
     }
   }
@@ -113,14 +120,15 @@ for(i in seq_along(mtx)){
 
 # ABMs
 set.seed(290691)
-mtx_50posgos <- lapply(mtx,ntw_evolution,reps=2500,force=.1,pos_gossip=0.5,n_receivers=3,n_targets=3)
+mtx_50posgos <- lapply(mtx,ntw_evolution,reps=2000,pos_gossip=0.5,n_targets=3,n_receivers=3,
+                       force_sr=.1,force_st=.1,force_rt=.1)
 
 ########################################################################################################################
 
-# Results (Keep only results at rates 100, 500, 1000, 1500, 2000, 2500)
+# Results (Keep only results at rates 50, 100, 500, 1000, 1500, 2000)
 for(i in seq_along(mtx_50posgos)){
-  mtx_50posgos[[i]] <- mtx_50posgos[[i]][c(100,500,1000,1500,2000,2500)]
-  names(mtx_50posgos[[i]]) <- c(100,500,1000,1500,2000,2500)
+  mtx_50posgos[[i]] <- mtx_50posgos[[i]][c(50,100,500,1000,1500,2000)]
+  names(mtx_50posgos[[i]]) <- c(50,100,500,1000,1500,2000)
 }
 
 # Visualistions (histograms)
@@ -135,10 +143,10 @@ for(i in seq_along(mtx_50posgos)){
   }
 }
 
-# Visualistions (networks) (only at rates 1000, 1500, 2000, 2500)
-par(mfrow=c(2,2))
+# Visualistions (networks) (only at rates 1000, 1500, 2000)
+par(mfrow=c(1,3))
 for(i in seq_along(mtx_50posgos)){
-  for(j in 3:6){
+  for(j in 4:6){
     x <- graph_from_adjacency_matrix(1*(mtx_50posgos[[i]][[j]] > .95),mode='undirected',diag=FALSE)
     layo <- layout_with_fr(x)
     groups <- cluster_edge_betweenness(x)
