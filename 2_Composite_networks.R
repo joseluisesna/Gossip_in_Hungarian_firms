@@ -235,9 +235,9 @@ ggplot(data=degree_sum)+
   geom_line(aes(x=cutoff,y=degree,group=Unit,colour=Unit),linetype='solid',size=1.5)+
   geom_point(aes(x=cutoff,y=degree,),colour='black',size=4)+
   geom_point(aes(x=cutoff,y=degree,colour=Unit),size=3)+
-  geom_vline(data=data.frame(xint=c(NA,2,NA),tie=c('expressive','negative','respect')),
+  geom_vline(data=data.frame(xint=c(NA,3,NA),tie=c('expressive','negative','respect')),
              aes(xintercept=xint),linetype='solid',colour='red',size=6,alpha=.33)+
-  geom_vline(data=data.frame(xint=c(6,NA,NA),tie=c('expressive','negative','respect')),
+  geom_vline(data=data.frame(xint=c(5,NA,NA),tie=c('expressive','negative','respect')),
              aes(xintercept=xint),linetype='solid',colour='red',size=6,alpha=.33)+
   facet_wrap(~tie,nrow=1,scales='free_x')+
   xlab('Number of network items')+ylab('Average out-degree in the composite network')+
@@ -253,7 +253,7 @@ for(i in seq_along(networks_mtx)){
   networks_mtx[[i]]$respect <- NULL # respect excluded
   for(j in seq_along(networks_mtx[[i]])){
     if(j == 1){
-      networks_mtx[[i]][[j]] <- 1*(networks_mtx[[i]][[j]] >= 6) # expressive
+      networks_mtx[[i]][[j]] <- 1*(networks_mtx[[i]][[j]] >= 5) # expressive
     }else{
       networks_mtx[[i]][[j]] <- 1*(networks_mtx[[i]][[j]] >= 3) # negative
     }
@@ -288,10 +288,15 @@ for(i in seq_along(networks_mtx)){
   }
 }
 
-# Min-symmetrisation of the networks (only reciprocated ties)
+# Symmetrisation of the networks
 sym_mtx <- networks_mtx
 for(x in seq_along(sym_mtx)){
   for(y in seq_along(sym_mtx[[x]])){
+    if(y == 1){ # min-symmtrisation for positive ties
+      sym_mtx[[x]][[y]] <- sna::symmetrize(1*(!is.na(sym_mtx[[x]][[y]]) & sym_mtx[[x]][[y]]==1),rule='strong')
+    }else{ # max-symmrisation for negative ties
+      sym_mtx[[x]][[y]] <- sna::symmetrize(1*(!is.na(sym_mtx[[x]][[y]]) & sym_mtx[[x]][[y]]==1),rule='weak')
+    }
     sym_mtx[[x]][[y]] <- sna::symmetrize(1*(!is.na(sym_mtx[[x]][[y]]) & sym_mtx[[x]][[y]]==1),rule='strong')
     rownames(sym_mtx[[x]][[y]]) <- colnames(sym_mtx[[x]][[y]]) <- rownames(networks_mtx[[x]][[y]])
     # Allocation of missing data
@@ -313,11 +318,13 @@ sym_mtx$F103$expressive[,'1F03016'] <- sym_mtx$F103$expressive['1F03016',] <- ne
 sym_mtx$F103$expressive[,'1F03026'] <- sym_mtx$F103$expressive['1F03026',] <- networks_mtx$F103$expressive[,'1F03026']
 sym_mtx$P102$expressive[,'1P106'] <- sym_mtx$P102$expressive['1P106',] <- networks_mtx$P102$expressive[,'1P106']
 
+sym_mtx$F103$negative[,'1F03002'] <- sym_mtx$F103$negative['1F03002',] <- networks_mtx$F103$negative[,'1F03002']
+sym_mtx$F103$negative[,'1F03016'] <- sym_mtx$F103$negative['1F03016',] <- networks_mtx$F103$negative[,'1F03016']
+sym_mtx$F103$negative[,'1F03026'] <- sym_mtx$F103$negative['1F03026',] <- networks_mtx$F103$negative[,'1F03026']
+sym_mtx$P102$negative[,'1P106'] <- sym_mtx$P102$negative['1P106',] <- networks_mtx$P102$negative[,'1P106']
+
 # Visualisation of the networks
 ntw_plot <- sym_mtx
-for(i in seq_along(ntw_plot)){
-  ntw_plot[[i]]$negative <- networks_mtx[[i]]$negative
-}
 
 # Some descriptive (density and mutual)
 for(i in seq_along(ntw_plot)){
@@ -337,7 +344,7 @@ for(i in seq_along(ntw_plot)){
   ntw_plot[[i]]$group <- igraph::cluster_edge_betweenness(ntw_plot[[i]]$group) # clustering
   # Show both expressive and negative ties
   ntw_plot[[i]]$vis <- graph_from_adjacency_matrix(ntw_plot[[i]]$expressive - ntw_plot[[i]]$negative,
-                                                   mode='directed',diag=FALSE,weighted=TRUE)
+                                                   mode='undirected',diag=FALSE,weighted=TRUE)
   # Layout based only on expressive ties
   ntw_plot[[i]]$layout <- layout_with_kk(graph_from_adjacency_matrix(ntw_plot[[i]]$expressive,mode='directed'))
   # Customisation of nodes and ties
@@ -351,7 +358,7 @@ for(i in seq_along(ntw_plot)){
   # Visualisation
   jpeg(filename=paste('Unit',i,'.jpeg',sep=''),width=4,height=4,units='in',res=1000)
   plot(ntw_plot[[i]]$vis,mark.groups=ntw_plot[[i]]$group,
-       vertex.label=NA,edge.arrow.size=.1,layout=ntw_plot[[i]]$layout)
+       vertex.label=NA,layout=ntw_plot[[i]]$layout)
   dev.off()
 }
 
