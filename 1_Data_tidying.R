@@ -216,14 +216,14 @@ for(x in seq_along(rec_sen)){
 }
 
 gossip_sum <- as.data.frame(matrix(NA,nrow=length(rec_sen),ncol=8,
-                                   dimnames=list(names(rec_sen),c('triads','triads_pos','triads_neg','triads_total',
+                                   dimnames=list(names(rec_sen),c('gossip','pos_gossip','neg_gossip','triads',
                                                                   'reporters','reporters_pos','reporters_neg','nodes'))))
 
 for(x in seq_along(rec_sen)){
-  gossip_sum[x,'triads'] <- sum(gos[[x]],na.rm=TRUE) # gossip triads
-  gossip_sum[x,'triads_pos'] <- sum(gos_pos[[x]],na.rm=TRUE) # positive gossip triads
-  gossip_sum[x,'triads_neg'] <- sum(gos_neg[[x]],na.rm=TRUE) # negative gossip triads
-  gossip_sum[x,'triads_total'] <- sum(!is.na(gos[[x]])) # potential gossip triads
+  gossip_sum[x,'gossip'] <- sum(gos[[x]],na.rm=TRUE) # gossip triads
+  gossip_sum[x,'pos_gossip'] <- sum(gos_pos[[x]],na.rm=TRUE) # positive gossip triads
+  gossip_sum[x,'neg_gossip'] <- sum(gos_neg[[x]],na.rm=TRUE) # negative gossip triads
+  gossip_sum[x,'triads'] <- sum(!is.na(gos[[x]])) # potential gossip triads
   gossip_sum[x,'reporters'] <- sum(rec_sen[[x]] != 0) # number of gossip reporters
   gossip_sum[x,'reporters_pos'] <- sum(rec_sen_pos[[x]] != 0) # number of pos. gossip reporters
   gossip_sum[x,'reporters_neg'] <- sum(rec_sen_neg[[x]] != 0) # number of neg. gossip reporters 
