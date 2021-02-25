@@ -9,15 +9,16 @@
 library(lpSolve);library(irr);library(ape);library(lattice);library(ggplot2);library(sna);library(viridis);library(igraph)
 
 # DATA LOADING AND DATA TIDYING
+rm(list=ls())
 load('tidieddata.RData')
 
 ########################################################################################################################
 
 # COMPOSITVE NETWORK CREATION (FOLLOWING VOROS & SNIJDERS, 2017)
 
-# 1) Exclusion of networks concerning knowledge about others' earnings (networks 15:23) and gossip (42)
+# 1) Exclusion of networks concerning knowledge about others' earnings (networks 15:23) 
 for(i in seq_along(networks_mtx)){
-  networks_mtx[[i]] <- networks_mtx[[i]][c(1:14,24:41,43)]
+  networks_mtx[[i]] <- networks_mtx[[i]][c(1:14,24:42)]
 }
 
 # 2) When the matrices capture grades of the same dimension, binarization
@@ -160,10 +161,10 @@ levelplot(mean_jaccard2,cuts=7,at=seq(0,.7,.1),col.regions=heat.colors(100),
 dev.off()
 
 # 7) Composite networks
-# Three latent dimensions: affection, respect, and negative
-expressive <- c('wage_increasing','cooperate_well','cooperate_job_duties','friend','does_job_well','trustworthy',
+# Three latent dimensions: positive, authority, and negative
+positive <- c('wage_increasing','cooperate_well','cooperate_job_duties','friend','does_job_well','trustworthy',
                'regular_personal_conversation','regular_work_conversation')
-respect <- c('popular','listen_to_her','colleagues_listen_to_her','colleagues_ask_for_her_help',
+authority <- c('popular','listen_to_her','colleagues_listen_to_her','colleagues_ask_for_her_help',
              'colleagues_appreciate','appreciation','turn_for_her_help')
 negative <- c('would_not_cooperate','wage_reduction','colleagues_despise','shares_negative_info_about_me','not_friend',
               'not_suitable_for_job','belong_to_team')
@@ -173,16 +174,16 @@ names(comp_networks) <- names(networks_mtx)
 
 for(i in seq_along(comp_networks)){
   comp_networks[[i]] <- vector('list',length=3)
-  names(comp_networks[[i]]) <- c('expressive','respect','negative')
+  names(comp_networks[[i]]) <- c('positive','authority','negative')
   for(j in seq_along(comp_networks[[i]])){
     if(j == 1){
       comp_networks[[i]][[j]] <- array(NA,dim=c(rep(nrow(networks_mtx[[i]][[1]]),2),8),
                                        dimnames=list(rownames(networks_mtx[[i]][[1]]),rownames(networks_mtx[[i]][[1]]),
-                                                     expressive))   
+                                                     positive))   
     }else if(j == 2){
       comp_networks[[i]][[j]] <- array(NA,dim=c(rep(nrow(networks_mtx[[i]][[1]]),2),7),
                                        dimnames=list(rownames(networks_mtx[[i]][[1]]),rownames(networks_mtx[[i]][[1]]),
-                                                     respect)) 
+                                                     authority)) 
     }else{
       comp_networks[[i]][[j]] <- array(NA,dim=c(rep(nrow(networks_mtx[[i]][[1]]),2),7),
                                        dimnames=list(rownames(networks_mtx[[i]][[1]]),rownames(networks_mtx[[i]][[1]]),
@@ -221,7 +222,7 @@ for(i in seq_along(cuts)){
 degree_sum <- as.data.frame(do.call('rbind',cuts))
 degree_sum$Unit <- rep(organisation_ID,8)
 degree_sum$cutoff <- rep(1:8,each=6)
-degree_sum <- tidyr::gather(degree_sum,key="tie",value='degree',c('expressive','respect','negative'))
+degree_sum <- tidyr::gather(degree_sum,key="tie",value='degree',c('positive','authority','negative'))
 
 # Visualisation
 grid.background <- theme_bw()+
@@ -235,9 +236,9 @@ ggplot(data=degree_sum)+
   geom_line(aes(x=cutoff,y=degree,group=Unit,colour=Unit),linetype='solid',size=1.5)+
   geom_point(aes(x=cutoff,y=degree,),colour='black',size=4)+
   geom_point(aes(x=cutoff,y=degree,colour=Unit),size=3)+
-  geom_vline(data=data.frame(xint=c(NA,3,NA),tie=c('expressive','negative','respect')),
+  geom_vline(data=data.frame(xint=c(NA,3,NA),tie=c('positive','negative','authority')),
              aes(xintercept=xint),linetype='solid',colour='red',size=6,alpha=.33)+
-  geom_vline(data=data.frame(xint=c(5,NA,NA),tie=c('expressive','negative','respect')),
+  geom_vline(data=data.frame(xint=c(5,NA,NA),tie=c('positive','negative','authority')),
              aes(xintercept=xint),linetype='solid',colour='red',size=6,alpha=.33)+
   facet_wrap(~tie,nrow=1,scales='free_x')+
   xlab('Number of network items')+ylab('Average out-degree in the composite network')+
@@ -250,32 +251,15 @@ dev.off()
 networks_mtx <- comp_networks 
 
 for(i in seq_along(networks_mtx)){
-  networks_mtx[[i]]$respect <- NULL # respect excluded
+  networks_mtx[[i]]$authority <- NULL # authority excluded
   for(j in seq_along(networks_mtx[[i]])){
     if(j == 1){
-      networks_mtx[[i]][[j]] <- 1*(networks_mtx[[i]][[j]] >= 5) # expressive
+      networks_mtx[[i]][[j]] <- 1*(networks_mtx[[i]][[j]] >= 5) # positive (5/8 positive ties needed)
     }else{
-      networks_mtx[[i]][[j]] <- 1*(networks_mtx[[i]][[j]] >= 3) # negative
+      networks_mtx[[i]][[j]] <- 1*(networks_mtx[[i]][[j]] >= 3) # negative (3/7 negative ties needed)
     }
   }
 }
-
-# Inspection the overlap between type of ties
-mtx_overlap <- networks_mtx 
-for(i in seq_along(mtx_overlap)){
-  mtx_overlap[[i]] <- array(NA,dim=c(rep(length(mtx_overlap[[i]]),2)),
-                            dimnames=list(names(mtx_overlap[[i]]),names(mtx_overlap[[i]])))
-}
-
-for(mtx in seq_along(mtx_overlap)){
-  for(i in 1:nrow(mtx_overlap[[mtx]])){
-    for(j in 1:ncol(mtx_overlap[[mtx]])){
-      mtx_overlap[[mtx]][i,j] <- Jaccard(networks_mtx[[mtx]][[i]],networks_mtx[[mtx]][[j]])
-    }
-  }
-}
-
-mtx_overlap
 
 # Inspection of the levels of density and reciprocation 
 for(i in seq_along(networks_mtx)){
@@ -292,9 +276,11 @@ for(i in seq_along(networks_mtx)){
 sym_mtx <- networks_mtx
 for(x in seq_along(sym_mtx)){
   for(y in seq_along(sym_mtx[[x]])){
-    if(y == 1){ # min-symmtrisation for positive ties
+    if(y == 1){ 
+      # min-symmtrisation for positive ties (both parties should agree on the tie)
       sym_mtx[[x]][[y]] <- sna::symmetrize(1*(!is.na(sym_mtx[[x]][[y]]) & sym_mtx[[x]][[y]]==1),rule='strong')
-    }else{ # max-symmrisation for negative ties
+    }else{ 
+      # max-symmrisation for negative ties (it suffices with one party reporting the tie)
       sym_mtx[[x]][[y]] <- sna::symmetrize(1*(!is.na(sym_mtx[[x]][[y]]) & sym_mtx[[x]][[y]]==1),rule='weak')
     }
     sym_mtx[[x]][[y]] <- sna::symmetrize(1*(!is.na(sym_mtx[[x]][[y]]) & sym_mtx[[x]][[y]]==1),rule='strong')
@@ -313,40 +299,54 @@ for(x in seq_along(sym_mtx)){
 }
 
 # For non-respondants, we kept their incoming ties as reciprocated
-sym_mtx$F103$expressive[,'1F03002'] <- sym_mtx$F103$expressive['1F03002',] <- networks_mtx$F103$expressive[,'1F03002']
-sym_mtx$F103$expressive[,'1F03016'] <- sym_mtx$F103$expressive['1F03016',] <- networks_mtx$F103$expressive[,'1F03016']
-sym_mtx$F103$expressive[,'1F03026'] <- sym_mtx$F103$expressive['1F03026',] <- networks_mtx$F103$expressive[,'1F03026']
-sym_mtx$P102$expressive[,'1P106'] <- sym_mtx$P102$expressive['1P106',] <- networks_mtx$P102$expressive[,'1P106']
+sym_mtx$F103$positive[,'1F03002'] <- sym_mtx$F103$positive['1F03002',] <- networks_mtx$F103$positive[,'1F03002']
+sym_mtx$F103$positive[,'1F03016'] <- sym_mtx$F103$positive['1F03016',] <- networks_mtx$F103$positive[,'1F03016']
+sym_mtx$F103$positive[,'1F03026'] <- sym_mtx$F103$positive['1F03026',] <- networks_mtx$F103$positive[,'1F03026']
+sym_mtx$P102$positive[,'1P106'] <- sym_mtx$P102$positive['1P106',] <- networks_mtx$P102$positive[,'1P106']
 
 sym_mtx$F103$negative[,'1F03002'] <- sym_mtx$F103$negative['1F03002',] <- networks_mtx$F103$negative[,'1F03002']
 sym_mtx$F103$negative[,'1F03016'] <- sym_mtx$F103$negative['1F03016',] <- networks_mtx$F103$negative[,'1F03016']
 sym_mtx$F103$negative[,'1F03026'] <- sym_mtx$F103$negative['1F03026',] <- networks_mtx$F103$negative[,'1F03026']
 sym_mtx$P102$negative[,'1P106'] <- sym_mtx$P102$negative['1P106',] <- networks_mtx$P102$negative[,'1P106']
 
-# Visualisation of the networks
-ntw_plot <- sym_mtx
+# Inspection the overlap between positive and negative ties
+mtx_overlap <- networks_mtx 
+for(i in seq_along(mtx_overlap)){
+  mtx_overlap[[i]] <- array(NA,dim=c(rep(length(mtx_overlap[[i]]),2)),
+                            dimnames=list(names(mtx_overlap[[i]]),names(mtx_overlap[[i]])))
+}
 
-# Some descriptive (density and mutual)
-for(i in seq_along(ntw_plot)){
-  for(j in seq_along(ntw_plot[[i]])){
-    d <- round(as.vector(sna::gden(ntw_plot[[i]][[j]])),2)
-    m <- round(as.vector(sna::grecip(ntw_plot[[i]][[j]],measure='edgewise')),2)
-    output <- data.frame(c(d,m),row.names=c('Density','Mutual'))
-    colnames(output) <- paste(names(ntw_plot)[[i]],names(ntw_plot[[i]])[[j]])
-    print(output)
+for(mtx in seq_along(mtx_overlap)){
+  for(i in 1:nrow(mtx_overlap[[mtx]])){
+    for(j in 1:ncol(mtx_overlap[[mtx]])){
+      mtx_overlap[[mtx]][i,j] <- Jaccard(networks_mtx[[mtx]][[i]],networks_mtx[[mtx]][[j]])
+    }
   }
 }
 
+mtx_overlap
+
+# There is a small overlap in the first unit: overlap sent to zero in both the positive and negative network (no tie)
+sym_mtx$A104$positive[!is.na(sym_mtx$A104$positive + sym_mtx$A104$negative) & 
+                        sym_mtx$A104$positive + sym_mtx$A104$negative == 2] <- 0
+sym_mtx$A104$negative[!is.na(sym_mtx$A104$positive + sym_mtx$A104$negative) & 
+                        sym_mtx$A104$positive + sym_mtx$A104$negative == 2] <- 0
+
+########################################################################################################################
+
+# Visualisation of the networks
+ntw_plot <- sym_mtx
+
 for(i in seq_along(ntw_plot)){
   # Clustering using Newman's method based on positive ties only
-  ntw_plot[[i]]$group <- ntw_plot[[i]]$expressive 
+  ntw_plot[[i]]$group <- ntw_plot[[i]]$positive 
   ntw_plot[[i]]$group <- graph_from_adjacency_matrix(ntw_plot[[i]]$group,mode='undirected',diag=FALSE)
   ntw_plot[[i]]$group <- igraph::cluster_edge_betweenness(ntw_plot[[i]]$group) # clustering
-  # Show both expressive and negative ties
-  ntw_plot[[i]]$vis <- graph_from_adjacency_matrix(ntw_plot[[i]]$expressive - ntw_plot[[i]]$negative,
+  # Show both positive and negative ties
+  ntw_plot[[i]]$vis <- graph_from_adjacency_matrix(ntw_plot[[i]]$positive - ntw_plot[[i]]$negative,
                                                    mode='undirected',diag=FALSE,weighted=TRUE)
-  # Layout based only on expressive ties
-  ntw_plot[[i]]$layout <- layout_with_kk(graph_from_adjacency_matrix(ntw_plot[[i]]$expressive,mode='directed'))
+  # Layout based only on positive ties
+  ntw_plot[[i]]$layout <- layout_with_kk(graph_from_adjacency_matrix(ntw_plot[[i]]$positive,mode='directed'))
   # Customisation of nodes and ties
   V(ntw_plot[[i]]$vis)$color <- ifelse(attributes[attributes$group == organisation_ID[[i]],]$woman == 1,'magenta','skyblue')
   V(ntw_plot[[i]]$vis)$shape <- ifelse(attributes[attributes$group == organisation_ID[[i]],]$hr_leader == 1,'square','circle')
@@ -366,8 +366,9 @@ for(i in seq_along(ntw_plot)){
 
 # Removal of unnecessary objects
 rm(cluster_model);rm(ape_model);rm(mean_jaccard);rm(mean_jaccard2);rm(networks_available);rm(clust_order)
-rm(matrix_selection);rm(mtx);rm(i);rm(j);rm(k);rm(colours);rm(cutrees);rm(cuts);rm(expressive);rm(respect);rm(negative)
+rm(matrix_selection);rm(mtx);rm(i);rm(j);rm(k);rm(colours);rm(cutrees);rm(cuts);rm(positive);rm(authority);rm(negative)
 rm(items);rm(degree_sum);rm(grid.background);rm(mtx_overlap);rm(ntw_plot);rm(x);rm(y);rm(d);rm(m);rm(output)
+rm(comp_networks);rm(networks_mtx)
 
 # Save image
 save.image('tidieddata2.RData')
