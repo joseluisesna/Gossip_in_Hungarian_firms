@@ -236,7 +236,7 @@ ggplot(data=degree_sum)+
   geom_line(aes(x=cutoff,y=degree,group=Unit,colour=Unit),linetype='solid',size=1.5)+
   geom_point(aes(x=cutoff,y=degree,),colour='black',size=4)+
   geom_point(aes(x=cutoff,y=degree,colour=Unit),size=3)+
-  geom_vline(data=data.frame(xint=c(NA,3,NA),tie=c('positive','negative','authority')),
+  geom_vline(data=data.frame(xint=c(NA,1,NA),tie=c('positive','negative','authority')),
              aes(xintercept=xint),linetype='solid',colour='red',size=6,alpha=.33)+
   geom_vline(data=data.frame(xint=c(5,NA,NA),tie=c('positive','negative','authority')),
              aes(xintercept=xint),linetype='solid',colour='red',size=6,alpha=.33)+
@@ -256,7 +256,7 @@ for(i in seq_along(networks_mtx)){
     if(j == 1){
       networks_mtx[[i]][[j]] <- 1*(networks_mtx[[i]][[j]] >= 5) # positive (5/8 positive ties needed)
     }else{
-      networks_mtx[[i]][[j]] <- 1*(networks_mtx[[i]][[j]] >= 3) # negative (3/7 negative ties needed)
+      networks_mtx[[i]][[j]] <- 1*(networks_mtx[[i]][[j]] >= 1) # negative (1/7 negative tie needed)
     }
   }
 }
@@ -272,17 +272,17 @@ for(i in seq_along(networks_mtx)){
   }
 }
 
+# Inspection the overlap between positive and negative ties (Jaccard)
+mtx_overlap <- networks_mtx
+for(i in seq_along(mtx_overlap)){
+  mtx_overlap[[i]] <- Jaccard(networks_mtx[[i]]$positive,networks_mtx[[i]]$negative)
+}
+unlist(mtx_overlap)
+
 # Symmetrisation of the networks
 sym_mtx <- networks_mtx
 for(x in seq_along(sym_mtx)){
   for(y in seq_along(sym_mtx[[x]])){
-    if(y == 1){ 
-      # min-symmtrisation for positive ties (both parties should agree on the tie)
-      sym_mtx[[x]][[y]] <- sna::symmetrize(1*(!is.na(sym_mtx[[x]][[y]]) & sym_mtx[[x]][[y]]==1),rule='strong')
-    }else{ 
-      # max-symmrisation for negative ties (it suffices with one party reporting the tie)
-      sym_mtx[[x]][[y]] <- sna::symmetrize(1*(!is.na(sym_mtx[[x]][[y]]) & sym_mtx[[x]][[y]]==1),rule='weak')
-    }
     sym_mtx[[x]][[y]] <- sna::symmetrize(1*(!is.na(sym_mtx[[x]][[y]]) & sym_mtx[[x]][[y]]==1),rule='strong')
     rownames(sym_mtx[[x]][[y]]) <- colnames(sym_mtx[[x]][[y]]) <- rownames(networks_mtx[[x]][[y]])
     # Allocation of missing data
@@ -309,28 +309,20 @@ sym_mtx$F103$negative[,'1F03016'] <- sym_mtx$F103$negative['1F03016',] <- networ
 sym_mtx$F103$negative[,'1F03026'] <- sym_mtx$F103$negative['1F03026',] <- networks_mtx$F103$negative[,'1F03026']
 sym_mtx$P102$negative[,'1P106'] <- sym_mtx$P102$negative['1P106',] <- networks_mtx$P102$negative[,'1P106']
 
-# Inspection the overlap between positive and negative ties
-mtx_overlap <- networks_mtx 
+# Inspection the overlap between positive and negative ties (Jaccard)
+mtx_overlap <- sym_mtx
 for(i in seq_along(mtx_overlap)){
-  mtx_overlap[[i]] <- array(NA,dim=c(rep(length(mtx_overlap[[i]]),2)),
-                            dimnames=list(names(mtx_overlap[[i]]),names(mtx_overlap[[i]])))
+  mtx_overlap[[i]] <- Jaccard(sym_mtx[[i]]$positive,sym_mtx[[i]]$negative)
 }
+unlist(mtx_overlap)
 
-for(mtx in seq_along(mtx_overlap)){
-  for(i in 1:nrow(mtx_overlap[[mtx]])){
-    for(j in 1:ncol(mtx_overlap[[mtx]])){
-      mtx_overlap[[mtx]][i,j] <- Jaccard(networks_mtx[[mtx]][[i]],networks_mtx[[mtx]][[j]])
-    }
-  }
+# If overlap between positive and negative, no tie exists
+for(i in seq_along(sym_mtx)){
+  sym_mtx[[i]]$positive[!is.na(sym_mtx[[i]]$positive + sym_mtx[[i]]$negative) & 
+                          sym_mtx[[i]]$positive + sym_mtx[[i]]$negative == 2] <- 0
+  sym_mtx[[i]]$negative[!is.na(sym_mtx[[i]]$positive + sym_mtx[[i]]$negative) & 
+                          sym_mtx[[i]]$positive + sym_mtx[[i]]$negative == 2] <- 0
 }
-
-mtx_overlap
-
-# There is a small overlap in the first unit: overlap sent to zero in both the positive and negative network (no tie)
-sym_mtx$A104$positive[!is.na(sym_mtx$A104$positive + sym_mtx$A104$negative) & 
-                        sym_mtx$A104$positive + sym_mtx$A104$negative == 2] <- 0
-sym_mtx$A104$negative[!is.na(sym_mtx$A104$positive + sym_mtx$A104$negative) & 
-                        sym_mtx$A104$positive + sym_mtx$A104$negative == 2] <- 0
 
 ########################################################################################################################
 
