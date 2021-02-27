@@ -252,11 +252,21 @@ networks_mtx <- comp_networks
 
 for(i in seq_along(networks_mtx)){
   networks_mtx[[i]]$authority <- NULL # authority excluded
-  for(j in seq_along(networks_mtx[[i]])){
-    if(j == 1){
-      networks_mtx[[i]][[j]] <- 1*(networks_mtx[[i]][[j]] >= 5) # positive (5/8 positive ties needed)
-    }else{
-      networks_mtx[[i]][[j]] <- 1*(networks_mtx[[i]][[j]] >= 1) # negative (1/7 negative tie needed)
+  if(i != 3){
+    for(j in seq_along(networks_mtx[[i]])){
+      if(j == 1){
+        networks_mtx[[i]][[j]] <- 1*(networks_mtx[[i]][[j]] >= 5) # positive (5/8 positive ties needed)
+      }else{
+        networks_mtx[[i]][[j]] <- 1*(networks_mtx[[i]][[j]] >= 1) # negative (1/7 negative tie needed)
+      }
+    }
+  }else{ # for Unit 3, we raised the theshold for positive ties
+    for(j in seq_along(networks_mtx[[i]])){
+      if(j == 1){
+        networks_mtx[[i]][[j]] <- 1*(networks_mtx[[i]][[j]] >= 7) # positive (7/8 positive ties needed)
+      }else{
+        networks_mtx[[i]][[j]] <- 1*(networks_mtx[[i]][[j]] >= 1) # negative (1/7 negative tie needed)
+      }
     }
   }
 }
@@ -338,7 +348,7 @@ for(i in seq_along(ntw_plot)){
   ntw_plot[[i]]$vis <- graph_from_adjacency_matrix(ntw_plot[[i]]$positive - ntw_plot[[i]]$negative,
                                                    mode='undirected',diag=FALSE,weighted=TRUE)
   # Layout based only on positive ties
-  ntw_plot[[i]]$layout <- layout_with_kk(graph_from_adjacency_matrix(ntw_plot[[i]]$positive,mode='directed'))
+  ntw_plot[[i]]$layout <- layout_with_fr(graph_from_adjacency_matrix(ntw_plot[[i]]$positive,mode='directed'))
   # Customisation of nodes and ties
   V(ntw_plot[[i]]$vis)$color <- ifelse(attributes[attributes$group == organisation_ID[[i]],]$woman == 1,'magenta','skyblue')
   V(ntw_plot[[i]]$vis)$shape <- ifelse(attributes[attributes$group == organisation_ID[[i]],]$hr_leader == 1,'square','circle')
