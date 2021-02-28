@@ -308,7 +308,7 @@ for(x in seq_along(sym_mtx)){
   }
 }
 
-# For non-respondants, we kept their incoming negative ties (but not the positive)
+# For non-respondents, we kept their incoming ties
 sym_mtx$F103$positive[,'1F03002'] <- sym_mtx$F103$positive['1F03002',] <- networks_mtx$F103$positive[,'1F03002']
 sym_mtx$F103$positive[,'1F03016'] <- sym_mtx$F103$positive['1F03016',] <- networks_mtx$F103$positive[,'1F03016']
 sym_mtx$F103$positive[,'1F03026'] <- sym_mtx$F103$positive['1F03026',] <- networks_mtx$F103$positive[,'1F03026']
