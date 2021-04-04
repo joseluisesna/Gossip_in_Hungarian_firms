@@ -1,1 +1,1 @@
-# Gossip_in_Hungarian_firms
+# Gossip in Hungarian firms
