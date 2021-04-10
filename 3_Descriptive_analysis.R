@@ -349,7 +349,7 @@ triad_data <- merge(x=triad_data,y=attributes[,c('responder','woman')],by.x='tar
 triad_data <- merge(x=triad_data,y=attributes[,c('responder','hr_leader')],by.x='sender',by.y='responder',all.x=TRUE)
 triad_data <- merge(x=triad_data,y=attributes[,c('responder','hr_leader')],by.x='receiver',by.y='responder',all.x=TRUE)
 triad_data <- merge(x=triad_data,y=attributes[,c('responder','hr_leader')],by.x='target',by.y='responder',all.x=TRUE)
-names(triad_data) <- c(names(triad_data)[1:20],
+names(triad_data) <- c(names(triad_data)[1:21],
                        'sender_woman','receiver_woman','target_woman','sender_boss','receiver_boss','target_boss')
 
 # Interactions
