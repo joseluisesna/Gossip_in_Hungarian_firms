@@ -353,11 +353,6 @@ triad_data <- merge(x=triad_data,y=attributes[,c('responder','hr_leader')],by.x=
 names(triad_data) <- c(names(triad_data)[1:21],
                        'sender_woman','receiver_woman','target_woman','sender_boss','receiver_boss','target_boss')
 
-# Interactions
-triad_data$PCx <- (triad_data$sender_role == 'periphery') * (triad_data$receiver_role == 'core')
-triad_data$CCx <- (triad_data$sender_role == 'core') * (triad_data$receiver_role == 'core')
-triad_data$PCP <- (triad_data$sender_role == 'periphery') * (triad_data$receiver_role == 'core') * (triad_data$target_role == 'periphery')
-
 ########################################################################################################################
 
 # Removal of unnecessary objects
