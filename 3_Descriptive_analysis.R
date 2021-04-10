@@ -307,6 +307,7 @@ for(i in seq_along(com_descrip)){
 com_descrip <- do.call('rbind',com_descrip)
 com_descrip <- com_descrip[,c(8,4,6,2,7,3,5,1)]
 colnames(com_descrip) <- c('III','II0','IOI','IOO','OII','OIO','OOI','OOO')
+com_descrip <- com_descrip[,c('III','IOO','OIO','OOI','OOO')]
 com_descrip
 round(colSums(com_descrip)/sum(com_descrip)*100,2)
 
