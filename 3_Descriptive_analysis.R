@@ -289,6 +289,42 @@ for(i in seq_along(ntw_plot)){
 
 # 6) DESCRIPTIVE STATISTICS
 
+# 6.1) Positive gossip
+# Keep only the gossip triads
+CP_descrip <- triad_data
+
+for(i in seq_along(CP_descrip)){
+  CP_descrip[[i]] <- CP_descrip[[i]][!is.na(CP_descrip[[i]]$gossip) & CP_descrip[[i]]$gossip == 1,]
+}
+
+com_descrip <- CP_descrip
+
+# In-group vs. out-group: descriptive (SR, ST, RT)
+for(i in seq_along(com_descrip)){
+  com_descrip[[i]] <- as.vector(table(com_descrip[[i]]$samegroup_SR,
+                                      com_descrip[[i]]$samegroup_ST,
+                                      com_descrip[[i]]$samegroup_RT))
+}
+com_descrip <- do.call('rbind',com_descrip)
+com_descrip <- com_descrip[,c(8,4,6,2,7,3,5,1)]
+colnames(com_descrip) <- c('III','II0','IOI','IOO','OII','OIO','OOI','OOO')
+com_descrip <- com_descrip[,c('III','IOO','OIO','OOI','OOO')]
+com_descrip
+round(colSums(com_descrip)/sum(com_descrip)*100,2)
+
+# Centre-periphery: descriptive (sender, receiver, target)
+for(i in seq_along(CP_descrip)){
+  CP_descrip[[i]] <- as.vector(table(CP_descrip[[i]]$sender_role,
+                                     CP_descrip[[i]]$receiver_role,
+                                     CP_descrip[[i]]$target_role))
+}
+CP_descrip <- do.call('rbind',CP_descrip)
+CP_descrip <- CP_descrip[,c(1,5,3,7,2,6,4,8)]
+colnames(CP_descrip) <- c('CCC','CCP','CPC','CPP','PCC','PCP','PPC','PPP')
+CP_descrip
+round(colSums(CP_descrip)/sum(CP_descrip)*100,2)
+
+# 6.2) Negative gossip
 # Keep only the gossip triads
 CP_descrip <- triad_data
 
@@ -322,36 +358,6 @@ CP_descrip <- CP_descrip[,c(1,5,3,7,2,6,4,8)]
 colnames(CP_descrip) <- c('CCC','CCP','CPC','CPP','PCC','PCP','PPC','PPP')
 CP_descrip
 round(colSums(CP_descrip)/sum(CP_descrip)*100,2)
-
-########################################################################################################################
-
-# Creation of single large dataset for triadic relations (all units together)
-triad_data <- do.call('rbind',triad_data)
-
-# Creation of variables
-triad_data$neg_gossip <- 1*(triad_data$gossip == -1) # negative gossip
-
-triad_data$SR_pos <- 1*(triad_data$SR == 1) # positive tie (SR)
-triad_data$ST_pos <- 1*(triad_data$ST == 1) # positive tie (ST)
-triad_data$RT_pos <- 1*(triad_data$RT == 1) # positive tie (RT)
-triad_data$SR_neg <- 1*(triad_data$SR == -1) # negative tie (SR)
-triad_data$ST_neg <- 1*(triad_data$ST == -1) # negative tie (ST)
-triad_data$RT_neg <- 1*(triad_data$RT == -1) # negative tie (RT)
-
-# re-level (periphery as the reference level)
-triad_data$sender_role<- factor(triad_data$sender_role,levels=c('periphery','core'))
-triad_data$receiver_role<- factor(triad_data$receiver_role,levels=c('periphery','core'))
-triad_data$target_role<- factor(triad_data$target_role,levels=c('periphery','core'))
-
-# Addition of gender and hierarchical position
-triad_data <- merge(x=triad_data,y=attributes[,c('responder','woman')],by.x='sender',by.y='responder',all.x=TRUE)
-triad_data <- merge(x=triad_data,y=attributes[,c('responder','woman')],by.x='receiver',by.y='responder',all.x=TRUE)
-triad_data <- merge(x=triad_data,y=attributes[,c('responder','woman')],by.x='target',by.y='responder',all.x=TRUE)
-triad_data <- merge(x=triad_data,y=attributes[,c('responder','hr_leader')],by.x='sender',by.y='responder',all.x=TRUE)
-triad_data <- merge(x=triad_data,y=attributes[,c('responder','hr_leader')],by.x='receiver',by.y='responder',all.x=TRUE)
-triad_data <- merge(x=triad_data,y=attributes[,c('responder','hr_leader')],by.x='target',by.y='responder',all.x=TRUE)
-names(triad_data) <- c(names(triad_data)[1:21],
-                       'sender_woman','receiver_woman','target_woman','sender_boss','receiver_boss','target_boss')
 
 ########################################################################################################################
 
