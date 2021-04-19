@@ -203,8 +203,13 @@ for(i in seq_along(triad_data)){
 # Construction of role-periphery
 for(i in seq_along(networks_mtx)){
   # The square root of edge betweenness
-  networks_mtx[[i]]$sqrt_btw <- sqrt(betweenness(graph_from_adjacency_matrix(networks_mtx[[i]]$positive,
-                                                                             mode='directed',diag=FALSE),directed=TRUE))
+  if(i %in% c(1:3,5,6)){
+    networks_mtx[[i]]$sqrt_btw <- betweenness(graph_from_adjacency_matrix(networks_mtx[[i]]$positive,
+                                                                          mode='directed',diag=FALSE),directed=TRUE) 
+  }else{ # we use the square root in unit 4 because the standard procedure detects only 2 core members
+    networks_mtx[[i]]$sqrt_btw <- sqrt(betweenness(graph_from_adjacency_matrix(networks_mtx[[i]]$positive,
+                                                                               mode='directed',diag=FALSE),directed=TRUE))
+  }
   # Distance object
   networks_mtx[[i]]$sqrt_btw <- as.dist(abs(outer(networks_mtx[[i]]$sqrt_btw,networks_mtx[[i]]$sqrt_btw,'-')))
   # Hierarchical clustering (Ward D method)
@@ -218,7 +223,7 @@ for(i in seq_along(networks_mtx)){
 # Labelling the roles
 networks_mtx[[1]]$roles <- factor(networks_mtx[[1]]$roles,levels=c(1,2),labels=c('core','periphery'))
 networks_mtx[[2]]$roles <- factor(networks_mtx[[2]]$roles,levels=c(1,2),labels=c('core','periphery'))
-networks_mtx[[3]]$roles <- factor(networks_mtx[[3]]$roles,levels=c(1,2),labels=c('core','periphery'))
+networks_mtx[[3]]$roles <- factor(networks_mtx[[3]]$roles,levels=c(2,1),labels=c('core','periphery'))
 networks_mtx[[4]]$roles <- factor(networks_mtx[[4]]$roles,levels=c(1,2),labels=c('core','periphery'))
 networks_mtx[[5]]$roles <- factor(networks_mtx[[5]]$roles,levels=c(2,1),labels=c('core','periphery'))
 networks_mtx[[6]]$roles <- factor(networks_mtx[[6]]$roles,levels=c(2,1),labels=c('core','periphery'))
