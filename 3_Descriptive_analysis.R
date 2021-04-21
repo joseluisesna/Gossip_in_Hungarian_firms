@@ -202,14 +202,9 @@ for(i in seq_along(triad_data)){
 
 # Construction of role-periphery
 for(i in seq_along(networks_mtx)){
-  # The square root of edge betweenness
-  if(i %in% c(1:3,5,6)){
-    networks_mtx[[i]]$sqrt_btw <- betweenness(graph_from_adjacency_matrix(networks_mtx[[i]]$positive,
-                                                                          mode='directed',diag=FALSE),directed=TRUE) 
-  }else{ # we use the square root in unit 4 because the standard procedure detects only 2 core members
-    networks_mtx[[i]]$sqrt_btw <- sqrt(betweenness(graph_from_adjacency_matrix(networks_mtx[[i]]$positive,
-                                                                               mode='directed',diag=FALSE),directed=TRUE))
-  }
+  # Edge betweenness
+  networks_mtx[[i]]$sqrt_btw <- betweenness(graph_from_adjacency_matrix(networks_mtx[[i]]$positive,
+                                                                        mode='directed',diag=FALSE),directed=TRUE) 
   # Distance object
   networks_mtx[[i]]$sqrt_btw <- as.dist(abs(outer(networks_mtx[[i]]$sqrt_btw,networks_mtx[[i]]$sqrt_btw,'-')))
   # Hierarchical clustering (Ward D method)
