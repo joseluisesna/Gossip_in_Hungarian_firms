@@ -198,9 +198,9 @@ for(i in seq_along(triad_data)){
 
 ########################################################################################################################
 
-# 5) CORE-PERIPHERY DETECTION
+# 5) BROKERS' DETECTION
 
-# Construction of role-periphery
+# Creation of matrices with two roles: central or core (C) and peripheral. Central actors are the brokers
 for(i in seq_along(networks_mtx)){
   # Edge betweenness
   networks_mtx[[i]]$sqrt_btw <- betweenness(graph_from_adjacency_matrix(networks_mtx[[i]]$positive,
@@ -211,7 +211,7 @@ for(i in seq_along(networks_mtx)){
   networks_mtx[[i]]$sqrt_btw <- hclust(networks_mtx[[i]]$sqrt_btw,method='ward.D')
   plot(networks_mtx[[i]]$sqrt_btw)
   rect.hclust(networks_mtx[[i]]$sqrt_btw,2,border='blue')
-  # Extraction of roles: core, semiperiphery, and periphery
+  # Extraction of roles: core (broker) and periphery
   networks_mtx[[i]]$roles <- cutree(networks_mtx[[i]]$sqrt_btw,k=2)
 }
 
