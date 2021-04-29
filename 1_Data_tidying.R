@@ -23,6 +23,9 @@ for(i in 1:nrow(attributes)){
   }
 }
 
+# We know those two did not report their gender were male
+attributes$woman[is.na(attributes$woman)] <- 0
+
 ########################################################################################################################
 
 # GENERAL INFORMATION
