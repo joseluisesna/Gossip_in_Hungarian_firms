@@ -14,6 +14,47 @@ load('tidieddata2.RData')
 
 ########################################################################################################################
 
+# 0) BASIC DESCRIPTIVE STATS OF THE SAMPLE
+
+# Number of nodes per unit
+summary(attributes$group)
+
+# Women per unit
+for(i in organisation_ID){
+  print(sum(attributes[attributes$group == i,]$woman == 1,na.rm=TRUE))
+}
+
+# Managers per unit
+for(i in organisation_ID){
+  print(sum(attributes[attributes$group == i,]$hr_leader == 1,na.rm=TRUE))
+}
+
+# Managers per unit
+for(i in organisation_ID){
+  print(sum(attributes[attributes$group == i & attributes$woman == 1,]$hr_leader == 1,na.rm=TRUE))
+}
+
+# Age
+for(i in organisation_ID){
+  print(mean(2018 - attributes[attributes$group == i,]$birth_year,na.rm=TRUE))
+  print(min(2018 - attributes[attributes$group == i,]$birth_year,na.rm=TRUE))
+  print(max(2018 - attributes[attributes$group == i,]$birth_year,na.rm=TRUE))
+}
+
+# Tenure
+attributes$tenure_year <- as.numeric(substr(attributes$hr_work_start,1,4))
+attributes$tenure_month <- as.numeric(substr(attributes$hr_work_start,6,7))
+attributes$tenure_day <- as.numeric(substr(attributes$hr_work_start,9,10))
+attributes$tenure <- round(2018 - attributes$tenure_year - attributes$tenure_month/12 - attributes$tenure_day/30,1)
+
+for(i in organisation_ID){
+  print(mean(attributes[attributes$group == i,]$tenure,na.rm=TRUE))
+  print(min(attributes[attributes$group == i,]$tenure,na.rm=TRUE))
+  print(max(attributes[attributes$group == i,]$tenure,na.rm=TRUE))
+}
+
+########################################################################################################################
+
 # 1) DESCRIPTIVE STATS (POSITIVE & NEGATIVE TIES)
 
 # Object to store summary statistics
@@ -43,8 +84,8 @@ for(i in organisation_ID){
   neg_mtx_sum[8,i] <- sd(rowSums(networks_mtx[[i]]$negative,na.rm=TRUE)) 
   neg_mtx_sum[9,i] <- sd(colSums(networks_mtx[[i]]$negative,na.rm=TRUE)) 
 }
-write.table(round(pos_mtx_sum,2),'pos_ties.csv',row.names=TRUE,sep=';')
-write.table(round(neg_mtx_sum,2),'neg_ties.csv',row.names=TRUE,sep=';')
+write.table(round(pos_mtx_sum,3),'pos_ties.csv',row.names=TRUE,sep=';')
+write.table(round(neg_mtx_sum,3),'neg_ties.csv',row.names=TRUE,sep=';')
 
 # Out- and in-degree distributions (positive ties)
 par(mfrow=c(3,2))
