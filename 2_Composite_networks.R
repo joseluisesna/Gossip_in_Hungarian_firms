@@ -223,6 +223,12 @@ grid.background <- theme_bw()+
   theme(strip.text.x=element_text(colour='white',face='bold'))+
   theme(strip.background=element_rect(fill='black'))
 
+degree_sum$Unit <- ifelse(degree_sum$Unit == 'A104','Unit A',
+                          ifelse(degree_sum == 'F101','Unit B',
+                                 ifelse(degree_sum == 'F103','Unit C',
+                                        ifelse(degree_sum == 'F105','Unit D',
+                                               ifelse(degree_sum == 'F106a','Unit E','Unit F')))))
+
 jpeg(filename='Composite network thresholds.jpeg',width=9,height=6,units='in',res=1000)
 ggplot(data=degree_sum)+
   geom_line(aes(x=cutoff,y=degree,group=Unit,colour=Unit),linetype='solid',size=1.5)+
@@ -256,7 +262,7 @@ for(i in seq_along(networks_mtx)){
 # Individuals with massive out-degree in the positive network (more than 10 ties sent)
 which(rowSums(networks_mtx[[1]]$positive,na.rm=TRUE)>=10)
 which(rowSums(networks_mtx[[2]]$positive,na.rm=TRUE)>=10) -> massive_F101 # 2 cases
-which(rowSums(networks_mtx[[3]]$positive,na.rm=TRUE)>=10) -> massive_F103 # 8 cases
+which(rowSums(networks_mtx[[3]]$positive,na.rm=TRUE)>=10) -> massive_F103 # 7 cases
 which(rowSums(networks_mtx[[4]]$positive,na.rm=TRUE)>=10)
 which(rowSums(networks_mtx[[5]]$positive,na.rm=TRUE)>=10)
 which(rowSums(networks_mtx[[6]]$positive,na.rm=TRUE)>=10)
