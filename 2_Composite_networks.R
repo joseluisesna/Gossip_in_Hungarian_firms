@@ -239,7 +239,7 @@ ggplot(data=degree_sum)+
   geom_vline(data=data.frame(xint=c(10,NA),tie=factor(c('Positive','Negative'),levels=c('Positive','Negative'))),
              aes(xintercept=xint),linetype='solid',colour='red',size=6,alpha=.33)+
   facet_wrap(~tie,nrow=1)+
-  xlab('Number of network items')+ylab('Average out-degree in the composite network')+
+  xlab('Number of network items')+ylab('Average degree in the composite network')+
   scale_x_continuous(breaks=1:length(cuts))+
   scale_colour_manual(values=viridis(6))+
   grid.background
