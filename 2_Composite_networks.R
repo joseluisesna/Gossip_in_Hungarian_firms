@@ -261,7 +261,7 @@ for(i in seq_along(networks_mtx)){
 # 10) Massive out-degree? (data correction)
 # Individuals with massive out-degree in the positive network (more than 10 ties sent)
 which(rowSums(networks_mtx[[1]]$positive,na.rm=TRUE)>=10)
-which(rowSums(networks_mtx[[2]]$positive,na.rm=TRUE)>=10) -> massive_F101 # 2 cases
+which(rowSums(networks_mtx[[2]]$positive,na.rm=TRUE)>=10) -> massive_F101 # 1 case
 which(rowSums(networks_mtx[[3]]$positive,na.rm=TRUE)>=10) -> massive_F103 # 7 cases
 which(rowSums(networks_mtx[[4]]$positive,na.rm=TRUE)>=10)
 which(rowSums(networks_mtx[[5]]$positive,na.rm=TRUE)>=10)
