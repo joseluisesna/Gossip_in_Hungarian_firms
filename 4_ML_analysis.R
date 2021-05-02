@@ -151,23 +151,3 @@ anova(results_pos2,results_pos3);anova(results_neg2,results_neg3)
 
 # Save image
 save.image('ML_results.RData')
-
-
-
-
-
-
-
-
-
-
-
-
-
-library(lme4);#library(brms)
-rm(list=ls())
-load('ML_results.RData')
-
-# Confidence intervals for the random effects
-confint(results_pos0,method=c('boot'),boot.type=c('perc'))
-confint(results_neg0,method=c('boot'),boot.type=c('perc'))
