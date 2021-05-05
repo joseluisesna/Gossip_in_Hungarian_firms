@@ -159,7 +159,7 @@ dev.off()
 # 7) Composite networks
 # Two latent dimensions: positive and negative
 positive <- c('wage_increasing','cooperate_well','cooperate_job_duties','friend','does_job_well','trustworthy',
-               'regular_personal_conversation','regular_work_conversation','popular','listen_to_her',
+              'regular_personal_conversation','regular_work_conversation','popular','listen_to_her',
               'colleagues_listen_to_her','colleagues_ask_for_her_help','colleagues_appreciate','appreciation','turn_for_her_help')
 negative <- c('would_not_cooperate','wage_reduction','colleagues_despise','shares_negative_info_about_me','not_friend',
               'not_suitable_for_job','belong_to_team','is_neutral')
@@ -283,9 +283,9 @@ unlist(mtx_overlap)
 # If overlap between positive and negative, no tie exists
 for(i in seq_along(networks_mtx)){
   networks_mtx[[i]]$positive[!is.na(networks_mtx[[i]]$positive + networks_mtx[[i]]$negative) & 
-                          networks_mtx[[i]]$positive + networks_mtx[[i]]$negative == 2] <- 0
+                               networks_mtx[[i]]$positive + networks_mtx[[i]]$negative == 2] <- 0
   networks_mtx[[i]]$negative[!is.na(networks_mtx[[i]]$positive + networks_mtx[[i]]$negative) & 
-                          networks_mtx[[i]]$positive + networks_mtx[[i]]$negative == 2] <- 0
+                               networks_mtx[[i]]$positive + networks_mtx[[i]]$negative == 2] <- 0
 }
 
 ########################################################################################################################
