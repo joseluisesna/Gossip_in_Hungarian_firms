@@ -241,7 +241,7 @@ for(i in seq_along(triad_data)){
 
 # 5) BROKERS' DETECTION
 
-# Creation of matrices with two roles: central or core (C) and peripheral. Central actors are the brokers
+# Creation of matrices with two roles: broker (betweenness-central actors) and non-broker
 for(i in seq_along(networks_mtx)){
   # Edge betweenness
   networks_mtx[[i]]$sqrt_btw <- betweenness(graph_from_adjacency_matrix(networks_mtx[[i]]$positive,
@@ -252,17 +252,17 @@ for(i in seq_along(networks_mtx)){
   networks_mtx[[i]]$sqrt_btw <- hclust(networks_mtx[[i]]$sqrt_btw,method='ward.D')
   plot(networks_mtx[[i]]$sqrt_btw)
   rect.hclust(networks_mtx[[i]]$sqrt_btw,2,border='blue')
-  # Extraction of roles: core (broker) and periphery
+  # Extraction of roles
   networks_mtx[[i]]$roles <- cutree(networks_mtx[[i]]$sqrt_btw,k=2)
 }
 
 # Labelling the roles
-networks_mtx[[1]]$roles <- factor(networks_mtx[[1]]$roles,levels=c(1,2),labels=c('core','periphery'))
-networks_mtx[[2]]$roles <- factor(networks_mtx[[2]]$roles,levels=c(1,2),labels=c('core','periphery'))
-networks_mtx[[3]]$roles <- factor(networks_mtx[[3]]$roles,levels=c(2,1),labels=c('core','periphery'))
-networks_mtx[[4]]$roles <- factor(networks_mtx[[4]]$roles,levels=c(1,2),labels=c('core','periphery'))
-networks_mtx[[5]]$roles <- factor(networks_mtx[[5]]$roles,levels=c(2,1),labels=c('core','periphery'))
-networks_mtx[[6]]$roles <- factor(networks_mtx[[6]]$roles,levels=c(2,1),labels=c('core','periphery'))
+networks_mtx[[1]]$roles <- factor(networks_mtx[[1]]$roles,levels=c(1,2),labels=c('broker','nonbroker'))
+networks_mtx[[2]]$roles <- factor(networks_mtx[[2]]$roles,levels=c(1,2),labels=c('broker','nonbroker'))
+networks_mtx[[3]]$roles <- factor(networks_mtx[[3]]$roles,levels=c(2,1),labels=c('broker','nonbroker'))
+networks_mtx[[4]]$roles <- factor(networks_mtx[[4]]$roles,levels=c(1,2),labels=c('broker','nonbroker'))
+networks_mtx[[5]]$roles <- factor(networks_mtx[[5]]$roles,levels=c(2,1),labels=c('broker','nonbroker'))
+networks_mtx[[6]]$roles <- factor(networks_mtx[[6]]$roles,levels=c(2,1),labels=c('broker','nonbroker'))
 
 # Extraction of roles for the triadic data
 for(i in seq_along(triad_data)){
@@ -277,21 +277,21 @@ for(i in seq_along(networks_mtx)){
   }
 }
 
-# Creation of matrices: core-core, core-periphery, periphery-core, periphery-periphery
+# Creation of matrices: broker-broker, broker-non-broker, etc.
 for(x in seq_along(networks_mtx)){
   networks_mtx[[x]]$cc <- networks_mtx[[x]]$cp <- networks_mtx[[x]]$pc <- networks_mtx[[x]]$pp <- networks_mtx[[x]]$clusters*0
   for(i in seq_along(networks_mtx[[x]]$roles)){
     for(j in seq_along(networks_mtx[[x]]$roles)){
-      if(networks_mtx[[x]]$roles[i] == 'core' & networks_mtx[[x]]$roles[j] == 'core'){
+      if(networks_mtx[[x]]$roles[i] == 'broker' & networks_mtx[[x]]$roles[j] == 'broker'){
         networks_mtx[[x]]$cc[i,j] <- 1
       }
-      if(networks_mtx[[x]]$roles[i] == 'core' & networks_mtx[[x]]$roles[j] == 'periphery'){
+      if(networks_mtx[[x]]$roles[i] == 'broker' & networks_mtx[[x]]$roles[j] == 'nonbroker'){
         networks_mtx[[x]]$cp[i,j] <- 1
       }
-      if(networks_mtx[[x]]$roles[i] == 'periphery' & networks_mtx[[x]]$roles[j] == 'core'){
+      if(networks_mtx[[x]]$roles[i] == 'nonbroker' & networks_mtx[[x]]$roles[j] == 'broker'){
         networks_mtx[[x]]$pc[i,j] <- 1
       }
-      if(networks_mtx[[x]]$roles[i] == 'periphery' & networks_mtx[[x]]$roles[j] == 'periphery'){
+      if(networks_mtx[[x]]$roles[i] == 'nonbroker' & networks_mtx[[x]]$roles[j] == 'nonbroker'){
         networks_mtx[[x]]$pp[i,j] <- 1
       }
     }
@@ -315,8 +315,8 @@ for(i in seq_along(ntw_plot)){
   ntw_plot[[i]]$layout <- layout_with_fr(graph_from_adjacency_matrix(ntw_plot[[i]]$positive,mode='directed'))
   # Customisation of nodes and ties
   V(ntw_plot[[i]]$vis)$shape <- ifelse(attributes[attributes$group == organisation_ID[[i]],]$hr_leader == 1,'square','circle')
-  V(ntw_plot[[i]]$vis)$color <- ifelse(networks_mtx[[i]]$roles == 'core','red','yellow')
-  V(ntw_plot[[i]]$vis)$size <- ifelse(networks_mtx[[i]]$roles == 'core',10,6)
+  V(ntw_plot[[i]]$vis)$color <- ifelse(networks_mtx[[i]]$roles == 'broker','red','yellow')
+  V(ntw_plot[[i]]$vis)$size <- ifelse(networks_mtx[[i]]$roles == 'broker',10,6)
   E(ntw_plot[[i]]$vis)$color <- 'darkgreen'
   E(ntw_plot[[i]]$vis)$width <- 1
   # Visualisation
@@ -361,7 +361,7 @@ for(i in seq_along(CP_descrip)){
 }
 CP_descrip <- do.call('rbind',CP_descrip)
 CP_descrip <- CP_descrip[,c(1,5,3,7,2,6,4,8)]
-colnames(CP_descrip) <- c('CCC','CCP','CPC','CPP','PCC','PCP','PPC','PPP')
+colnames(CP_descrip) <- c('BBB','BBN','BNB','BNN','NBB','NBN','NNB','NNN')
 CP_descrip
 round(colSums(CP_descrip)/sum(CP_descrip)*100,2)
 
@@ -396,15 +396,94 @@ for(i in seq_along(CP_descrip)){
 }
 CP_descrip <- do.call('rbind',CP_descrip)
 CP_descrip <- CP_descrip[,c(1,5,3,7,2,6,4,8)]
-colnames(CP_descrip) <- c('CCC','CCP','CPC','CPP','PCC','PCP','PPC','PPP')
+colnames(CP_descrip) <- c('BBB','BBN','BNB','BNN','NBB','NBN','NNB','NNN')
 CP_descrip
 round(colSums(CP_descrip)/sum(CP_descrip)*100,2)
+
+########################################################################################################################
+
+# 7) BROKERS' PROPERTIES
+
+brokers <- pos_odeg <- pos_ideg <- neg_odeg <- neg_ideg <- networks_mtx
+
+for(i in seq_along(brokers)){
+  brokers[[i]] <- brokers[[i]]$roles
+  pos_odeg[[i]] <- rowSums(pos_odeg[[i]]$positive,na.rm=TRUE)
+  pos_ideg[[i]] <- colSums(pos_ideg[[i]]$positive,na.rm=TRUE)
+  neg_odeg[[i]] <- rowSums(neg_odeg[[i]]$negative,na.rm=TRUE)
+  neg_ideg[[i]] <- colSums(neg_ideg[[i]]$negative,na.rm=TRUE)
+}
+
+brokers <- c(brokers[[1]],brokers[[2]],brokers[[3]],brokers[[4]],brokers[[5]],brokers[[6]])
+pos_odeg <- c(pos_odeg[[1]],pos_odeg[[2]],pos_odeg[[3]],pos_odeg[[4]],pos_odeg[[5]],pos_odeg[[6]])
+pos_ideg <- c(pos_ideg[[1]],pos_ideg[[2]],pos_ideg[[3]],pos_ideg[[4]],pos_ideg[[5]],pos_ideg[[6]])
+neg_odeg <- c(neg_odeg[[1]],neg_odeg[[2]],neg_odeg[[3]],neg_odeg[[4]],neg_odeg[[5]],neg_odeg[[6]])
+neg_ideg <- c(neg_ideg[[1]],neg_ideg[[2]],neg_ideg[[3]],neg_ideg[[4]],neg_ideg[[5]],neg_ideg[[6]])
+
+
+brokers <- factor(brokers,levels=c(1,2),labels=c('broker','nonbroker'))
+brokers <- as.data.frame(brokers)
+brokers$pos_odeg <- pos_odeg
+brokers$pos_ideg <- pos_ideg
+brokers$neg_odeg <- neg_odeg
+brokers$neg_ideg <- neg_ideg
+brokers$ID <- rownames(brokers)
+
+attributes <- merge(x=attributes,y=brokers,by.x='responder',by.y='ID',all.x=TRUE)
+
+# Descriptive stats
+summary(attributes$brokers)
+
+# Female brokers
+sum(attributes[attributes$brokers == 'broker',]$woman)
+sum(attributes[attributes$brokers == 'nonbroker',]$woman)
+prop.test(x=c(8,33),n=c(28,100),alternative='two.sided')
+
+# Brokers in management
+sum(attributes[attributes$brokers == 'broker',]$hr_leader)
+sum(attributes[attributes$brokers == 'nonbroker',]$hr_leader)
+prop.test(x=c(16,18),n=c(28,100),alternative='two.sided')
+
+# Age of brokers
+t.test(x=(2018 - attributes[attributes$brokers == 'broker',]$birth_year),
+       y=(2018 - attributes[attributes$brokers == 'nonbroker',]$birth_year),alternative='two.sided')
+range(2018 - attributes[attributes$brokers == 'broker',]$birth_year)
+range(2018 - attributes[attributes$brokers == 'nonbroker',]$birth_year)
+
+# Tenure of brokers
+t.test(x=(attributes[attributes$brokers == 'broker',]$tenure),
+       y=(attributes[attributes$brokers == 'nonbroker',]$tenure),alternative='two.sided')
+range(attributes[attributes$brokers == 'broker',]$tenure,na.rm=TRUE)
+range(attributes[attributes$brokers == 'nonbroker',]$tenure,na.rm=TRUE)
+
+# Degree differences
+# Positive outdegree
+t.test(x=(attributes[attributes$brokers == 'broker',]$pos_odeg),
+       y=(attributes[attributes$brokers == 'nonbroker',]$pos_odeg),alternative='two.sided')
+range(attributes[attributes$brokers == 'broker',]$pos_odeg,na.rm=TRUE)
+range(attributes[attributes$brokers == 'nonbroker',]$pos_odeg,na.rm=TRUE)
+# Positive indegree
+t.test(x=(attributes[attributes$brokers == 'broker',]$pos_ideg),
+       y=(attributes[attributes$brokers == 'nonbroker',]$pos_ideg),alternative='two.sided')
+range(attributes[attributes$brokers == 'broker',]$pos_ideg,na.rm=TRUE)
+range(attributes[attributes$brokers == 'nonbroker',]$pos_ideg,na.rm=TRUE)
+# Negative outdegree
+t.test(x=(attributes[attributes$brokers == 'broker',]$neg_odeg),
+       y=(attributes[attributes$brokers == 'nonbroker',]$neg_odeg),alternative='two.sided')
+range(attributes[attributes$brokers == 'broker',]$neg_odeg,na.rm=TRUE)
+range(attributes[attributes$brokers == 'nonbroker',]$neg_odeg,na.rm=TRUE)
+# Negative indegree
+t.test(x=(attributes[attributes$brokers == 'broker',]$neg_ideg),
+       y=(attributes[attributes$brokers == 'nonbroker',]$neg_ideg),alternative='two.sided')
+range(attributes[attributes$brokers == 'broker',]$neg_ideg,na.rm=TRUE)
+range(attributes[attributes$brokers == 'nonbroker',]$neg_ideg,na.rm=TRUE)
 
 ########################################################################################################################
 
 # Removal of unnecessary objects
 rm(pos_mtx_sum);rm(neg_mtx_sum);rm(gos_pos_sr);rm(gos_pos_st);rm(gos_pos_rt);rm(gos_neg_sr);rm(gos_neg_st);rm(gos_neg_rt)
 rm(gossip_sum_ind);rm(jacc_ind);rm(i);rm(j);rm(ntw_plot);rm(s);rm(r);rm(t);rm(x);rm(com_descrip);rm(CP_descrip)
+rm(brokers);rm(pos_odeg);rm(pos_ideg);rm(neg_odeg);rm(neg_ideg)
 
 # Save image
 save.image('modellingdata.RData')
