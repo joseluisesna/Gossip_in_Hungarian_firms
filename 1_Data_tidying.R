@@ -11,8 +11,6 @@ library(ggplot2)
 # DATA LOADING AND DATA TIDYING
 rm(list=ls())
 load('data.RData')
-rm(list=ls()[-c(1,13,20)]) # keep only attributes, networks, and gossip
-attributes <- attributes[,1:75] # # exclusion of relational variables from the object containing the attributes
 
 # Leaders per setting (fixing this variable which, in the original data set, is inaccurate)
 for(i in 1:nrow(attributes)){

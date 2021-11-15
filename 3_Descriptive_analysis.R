@@ -420,8 +420,6 @@ pos_ideg <- c(pos_ideg[[1]],pos_ideg[[2]],pos_ideg[[3]],pos_ideg[[4]],pos_ideg[[
 neg_odeg <- c(neg_odeg[[1]],neg_odeg[[2]],neg_odeg[[3]],neg_odeg[[4]],neg_odeg[[5]],neg_odeg[[6]])
 neg_ideg <- c(neg_ideg[[1]],neg_ideg[[2]],neg_ideg[[3]],neg_ideg[[4]],neg_ideg[[5]],neg_ideg[[6]])
 
-
-brokers <- factor(brokers,levels=c(1,2),labels=c('broker','nonbroker'))
 brokers <- as.data.frame(brokers)
 brokers$pos_odeg <- pos_odeg
 brokers$pos_ideg <- pos_ideg
