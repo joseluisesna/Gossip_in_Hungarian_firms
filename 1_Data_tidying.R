@@ -1,8 +1,8 @@
 ########################################################################################################################
 ## GOSSIP IN HUNGARIAN FIRMS
 ## Data tidying (1)
-## R script written by Jose Luis Estevez (Linkoping University)
-## Date: December 22nd, 2020
+## R script written by Jose Luis Estevez (Masaryk University)
+## Date: February 26th, 2022
 ########################################################################################################################
 
 # R PACKAGES REQUIRED
@@ -21,13 +21,11 @@ for(i in 1:nrow(attributes)){
   }
 }
 
-# We know those two did not report their gender were male
-attributes$woman[is.na(attributes$woman)] <- 0
+attributes$woman[is.na(attributes$woman)] <- 0 # We know those two did not report their gender were male
 
 ########################################################################################################################
 
 # GENERAL INFORMATION
-
 (organisation_ID <- unique(na.omit(attributes$group))) # 9 units or firms/departments
 (employee_ID <- attributes$responder) # N=225, but 2 duplicated employees: 1F6032 and 1F6033
 (networks_available <- unique(networks$network_questionID_EN)) # 43 relational variables per unit available 
@@ -73,7 +71,6 @@ attributes$respondent_missing <- attributes$respondent_missing > 50
 ########################################################################################################################
 
 # CREATION OF GOSSIP-CUBES
-
 # Subjects' IDs by organisation: for the dimensions of matrices and cubes
 org_subject <- vector('list',length=length(organisation_ID))
 names(org_subject) <- organisation_ID
@@ -114,7 +111,6 @@ for(i in 1:nrow(gossip)){
 ########################################################################################################################
 
 # CREATION OF RELATIONAL MATRICES
-
 # Exclusion of ties between different networks
 valid_ties <- vector(length=nrow(networks))
 
@@ -157,7 +153,6 @@ for(i in 1:nrow(networks)){
 ########################################################################################################################
 
 # CHECKING THE GOSSIP CUBE
-
 gos <- gos_pos <- gos_neg <- gossip_cube
 
 for(x in seq_along(gossip_cube)){
@@ -190,7 +185,6 @@ for(x in seq_along(gossip_cube)){
 }
 
 # Allocation of missing data (if a respondent was missing, all sender-target ties involving this respondent are missing)
-
 for(x in seq_along(gossip_cube)){
   for(i in rownames(gossip_cube[[x]])){
     if(i %in% missing_respondents){
@@ -236,7 +230,6 @@ gossip_sum
 ########################################################################################################################
 
 # SOME DESCRIPTIVES OF THE GOSSIP DATA
-
 desc_receiver <- vector('list',length=length(gossip_cube))
 for(i in seq_along(gossip_cube)){
   desc_receiver[[i]] <- as.data.frame(matrix(NA,nrow=nrow(gossip_cube[[i]]),ncol=4))

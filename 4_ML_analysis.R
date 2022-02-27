@@ -1,8 +1,8 @@
 ########################################################################################################################
 ## GOSSIP IN HUNGARIAN FIRMS
 ## Multilevel analysis (4)
-## R script written by Jose Luis Estevez (Linkoping University)
-## Date: April 29h 2021
+## R script written by Jose Luis Estevez (Masaryk University)
+## Date: Feb 27h 2022
 ########################################################################################################################
 
 # R PACKAGES REQUIRED
@@ -29,16 +29,10 @@ triad_data$SR_neg <- 1*(triad_data$SR == -1) # negative tie (SR)
 triad_data$ST_neg <- 1*(triad_data$ST == -1) # negative tie (ST)
 triad_data$RT_neg <- 1*(triad_data$RT == -1) # negative tie (RT)
 
-# re-level (periphery as the reference level)
-triad_data$sender_role <- factor(triad_data$sender_role,levels=c('periphery','core'))
-triad_data$receiver_role <- factor(triad_data$receiver_role,levels=c('periphery','core'))
-triad_data$target_role <- factor(triad_data$target_role,levels=c('periphery','core'))
-
-# Interaction terms
-triad_data$CCp <- (triad_data$sender_role=='core')*(triad_data$receiver_role=='core')
-triad_data$CpC <- (triad_data$sender_role=='core')*(triad_data$target_role=='core')
-triad_data$pCC <- (triad_data$receiver_role=='core')*(triad_data$target_role=='core')
-triad_data$CCC <- (triad_data$sender_role=='core')*(triad_data$receiver_role=='core')*(triad_data$target_role=='core')
+# re-level (nonbroker as the reference level)
+triad_data$sender_role <- factor(triad_data$sender_role,levels=c('nonbroker','broker'))
+triad_data$receiver_role <- factor(triad_data$receiver_role,levels=c('nonbroker','broker'))
+triad_data$target_role <- factor(triad_data$target_role,levels=c('nonbroker','broker'))
 
 # Addition of gender and hierarchical position
 triad_data <- merge(x=triad_data,y=attributes[,c('responder','woman')],by.x='sender',by.y='responder',all.x=TRUE)
@@ -47,7 +41,7 @@ triad_data <- merge(x=triad_data,y=attributes[,c('responder','woman')],by.x='tar
 triad_data <- merge(x=triad_data,y=attributes[,c('responder','hr_leader')],by.x='sender',by.y='responder',all.x=TRUE)
 triad_data <- merge(x=triad_data,y=attributes[,c('responder','hr_leader')],by.x='receiver',by.y='responder',all.x=TRUE)
 triad_data <- merge(x=triad_data,y=attributes[,c('responder','hr_leader')],by.x='target',by.y='responder',all.x=TRUE)
-names(triad_data) <- c(names(triad_data)[1:26],
+names(triad_data) <- c(names(triad_data)[1:22],
                        'sender_woman','receiver_woman','target_woman','sender_boss','receiver_boss','target_boss')
 
 # Create an effect for the isolates (to complement the group)
@@ -77,16 +71,18 @@ results_neg0 <- glmer(data=triad_data,neg_gossip ~ 1 +
                       family=binomial(link='logit'))
 summary(results_neg0)
 
-# 2.1) Model 1 (individual-level effects: broker, manager and gender)
+# 2.1) Model 1 (dyadic effects and individuals-level controls)
 results_pos1 <- glmer(data=triad_data,pos_gossip ~
-                        receiver_role + sender_role + target_role +
+                        SR_pos + ST_pos + RT_pos +
+                        SR_neg + ST_neg + RT_neg +
                         receiver_boss + sender_boss + target_boss +
                         receiver_woman + sender_woman + target_woman +
                         (1|unit) + (1|unit:receiver) + (1|unit:sender) + (1|unit:target),
                       family=binomial(link='logit'))
 summary(results_pos1)
 results_neg1 <- glmer(data=triad_data,neg_gossip ~
-                        receiver_role + sender_role + target_role +
+                        SR_pos + ST_pos + RT_pos +
+                        SR_neg + ST_neg + RT_neg +
                         receiver_boss + sender_boss + target_boss +
                         receiver_woman + sender_woman + target_woman +
                         (1|unit) + (1|unit:receiver) + (1|unit:sender) + (1|unit:target),
@@ -96,22 +92,24 @@ summary(results_neg1)
 # Model comparison
 anova(results_pos0,results_pos1);anova(results_neg0,results_neg1)
 
-# 2.2) Model 2 (individual- and dyadic-level effects)
+# 2.2) Model 2 (group effects)
 results_pos2 <- glmer(data=triad_data,pos_gossip ~
-                        receiver_role + sender_role + target_role +
-                        receiver_boss + sender_boss + target_boss +
-                        receiver_woman + sender_woman + target_woman +
                         SR_pos + ST_pos + RT_pos +
                         SR_neg + ST_neg + RT_neg +
+                        receiver_boss + sender_boss + target_boss +
+                        receiver_woman + sender_woman + target_woman +
+                        receiver_iso + sender_iso + target_iso +
+                        samegroup_SR + samegroup_ST + samegroup_RT + 
                         (1|unit) + (1|unit:receiver) + (1|unit:sender) + (1|unit:target),
                       family=binomial(link='logit'))
 summary(results_pos2)
 results_neg2 <- glmer(data=triad_data,neg_gossip ~
-                        receiver_role + sender_role + target_role +
-                        receiver_boss + sender_boss + target_boss +
-                        receiver_woman + sender_woman + target_woman +
                         SR_pos + ST_pos + RT_pos +
                         SR_neg + ST_neg + RT_neg +
+                        receiver_boss + sender_boss + target_boss +
+                        receiver_woman + sender_woman + target_woman +
+                        receiver_iso + sender_iso + target_iso +
+                        samegroup_SR + samegroup_ST + samegroup_RT +
                         (1|unit) + (1|unit:receiver) + (1|unit:sender) + (1|unit:target),
                       family=binomial(link='logit'))
 summary(results_neg2)
@@ -119,26 +117,26 @@ summary(results_neg2)
 # Model comparison
 anova(results_pos1,results_pos2);anova(results_neg1,results_neg2)
 
-# 2.3) Model 3 (individual-, dyadic- and triadic-level effects)
+# 2.3) Model 3 (brokering effects)
 results_pos3 <- glmer(data=triad_data,pos_gossip ~
-                        receiver_role + sender_role + target_role +
-                        receiver_boss + sender_boss + target_boss +
-                        receiver_woman + sender_woman + target_woman +
-                        receiver_iso + sender_iso + target_iso +
                         SR_pos + ST_pos + RT_pos +
                         SR_neg + ST_neg + RT_neg +
-                        samegroup_SR + samegroup_ST + samegroup_RT + samegroup_SR:samegroup_ST +
+                        receiver_boss + sender_boss + target_boss +
+                        receiver_woman + sender_woman + target_woman +                        
+                        receiver_role + sender_role + target_role +
+                        receiver_iso + sender_iso + target_iso +
+                        samegroup_SR + samegroup_ST + samegroup_RT + 
                         (1|unit) + (1|unit:receiver) + (1|unit:sender) + (1|unit:target),
                       family=binomial(link='logit'))
 summary(results_pos3)
 results_neg3 <- glmer(data=triad_data,neg_gossip ~
-                        receiver_role + sender_role + target_role +
-                        receiver_boss + sender_boss + target_boss +
-                        receiver_woman + sender_woman + target_woman +
-                        receiver_iso + sender_iso + target_iso +
                         SR_pos + ST_pos + RT_pos +
                         SR_neg + ST_neg + RT_neg +
-                        samegroup_SR + samegroup_ST + samegroup_RT + samegroup_SR:samegroup_ST +
+                        receiver_boss + sender_boss + target_boss +
+                        receiver_woman + sender_woman + target_woman +                        
+                        receiver_role + sender_role + target_role +
+                        receiver_iso + sender_iso + target_iso +
+                        samegroup_SR + samegroup_ST + samegroup_RT + 
                         (1|unit) + (1|unit:receiver) + (1|unit:sender) + (1|unit:target),
                       family=binomial(link='logit'))
 summary(results_neg3)

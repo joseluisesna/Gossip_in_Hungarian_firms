@@ -1,8 +1,8 @@
 ########################################################################################################################
 ## GOSSIP IN HUNGARIAN FIRMS
 ## Creation of composite networks (2)
-## R script written by Jose Luis Estevez (Linkoping University)
-## Date: March 23rd 2021
+## R script written by Jose Luis Estevez (Masaryk University)
+## Date: February 26th 2022
 ########################################################################################################################
 
 # R PACKAGES REQUIRED
@@ -15,7 +15,6 @@ load('tidieddata.RData')
 ########################################################################################################################
 
 # COMPOSITVE NETWORK CREATION (FOLLOWING VOROS & SNIJDERS, 2017)
-
 # 1) Exclusion of networks concerning knowledge about others' earnings (networks 15:23) 
 for(i in seq_along(networks_mtx)){
   networks_mtx[[i]] <- networks_mtx[[i]][c(1:14,24:42)]
@@ -259,18 +258,16 @@ for(i in seq_along(networks_mtx)){
 }
 
 # 10) Massive out-degree? (data correction)
-# Individuals with massive out-degree in the positive network (more than 10 ties sent)
-which(rowSums(networks_mtx[[1]]$positive,na.rm=TRUE)>=10)
-which(rowSums(networks_mtx[[2]]$positive,na.rm=TRUE)>=10) -> massive_F101 # 1 case
-which(rowSums(networks_mtx[[3]]$positive,na.rm=TRUE)>=10) -> massive_F103 # 7 cases
-which(rowSums(networks_mtx[[4]]$positive,na.rm=TRUE)>=10)
-which(rowSums(networks_mtx[[5]]$positive,na.rm=TRUE)>=10)
-which(rowSums(networks_mtx[[6]]$positive,na.rm=TRUE)>=10)
+#Individuals with massive out-degree in the positive network (more than 20 ties sent)
+which(rowSums(networks_mtx[[1]]$positive,na.rm=TRUE)>=20)
+which(rowSums(networks_mtx[[2]]$positive,na.rm=TRUE)>=20) 
+which(rowSums(networks_mtx[[3]]$positive,na.rm=TRUE)>=20) -> massive_F103 # 4 cases
+which(rowSums(networks_mtx[[4]]$positive,na.rm=TRUE)>=20)
+which(rowSums(networks_mtx[[5]]$positive,na.rm=TRUE)>=20)
+which(rowSums(networks_mtx[[6]]$positive,na.rm=TRUE)>=20)
 
 # Use only reciprocated ties instead
-rec_F101 <- 1*(networks_mtx[[2]]$positive[massive_F101,] + t(networks_mtx[[2]]$positive[,massive_F101]) == 2)
 rec_F103 <- 1*(networks_mtx[[3]]$positive[massive_F103,] + t(networks_mtx[[3]]$positive[,massive_F103]) == 2)
-networks_mtx[[2]]$positive[massive_F101,] <- rec_F101
 networks_mtx[[3]]$positive[massive_F103,] <- rec_F103
 
 # Inspection the overlap between positive and negative ties (Jaccard)
@@ -290,36 +287,10 @@ for(i in seq_along(networks_mtx)){
 
 ########################################################################################################################
 
-# Visualisation of the networks
-ntw_plot <- networks_mtx
-
-for(i in seq_along(ntw_plot)){
-  # Show both positive and negative ties
-  ntw_plot[[i]]$vis <- graph_from_adjacency_matrix(ntw_plot[[i]]$positive - ntw_plot[[i]]$negative,
-                                                   mode='directed',diag=FALSE,weighted=TRUE)
-  # Layout based only on positive ties
-  set.seed(0708)
-  ntw_plot[[i]]$layout <- layout_with_fr(graph_from_adjacency_matrix(ntw_plot[[i]]$positive,mode='directed'))
-  # Customisation of nodes and ties
-  V(ntw_plot[[i]]$vis)$color <- ifelse(attributes[attributes$group == organisation_ID[[i]],]$woman == 1,'magenta','skyblue')
-  V(ntw_plot[[i]]$vis)$shape <- ifelse(attributes[attributes$group == organisation_ID[[i]],]$hr_leader == 1,'square','circle')
-  V(ntw_plot[[i]]$vis)$size <- ifelse(attributes[attributes$group == organisation_ID[[i]],]$hr_leader == 1,10,7)
-  
-  E(ntw_plot[[i]]$vis)$color <- as.character(factor(E(ntw_plot[[i]]$vis)$weight,levels=c(-1,1),labels=c('red','darkgreen')))
-  E(ntw_plot[[i]]$vis)$width <- 1
-  # Visualisation
-  jpeg(filename=paste('Unit',i,'.jpeg',sep=''),width=4,height=4,units='in',res=1000)
-  plot(ntw_plot[[i]]$vis,edge.arrow.size=.2,vertex.label=NA,layout=ntw_plot[[i]]$layout)
-  dev.off()
-}
-
-########################################################################################################################
-
 # Removal of unnecessary objects
 rm(cluster_model);rm(ape_model);rm(mean_jaccard);rm(mean_jaccard2);rm(networks_available);rm(clust_order)
 rm(matrix_selection);rm(mtx);rm(i);rm(j);rm(k);rm(colours);rm(cutrees);rm(cuts);rm(positive);rm(negative)
-rm(items);rm(degree_sum);rm(grid.background);rm(mtx_overlap);rm(ntw_plot);rm(comp_networks);
-rm(rec_F101);rm(rec_F103);rm(massive_F101);rm(massive_F103)
+rm(items);rm(degree_sum);rm(grid.background);rm(mtx_overlap);rm(comp_networks);rm(massive_F103)
 
 # Save image
 save.image('tidieddata2.RData')

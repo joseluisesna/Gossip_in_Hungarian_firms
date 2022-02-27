@@ -1,8 +1,8 @@
 ########################################################################################################################
 ## GOSSIP IN HUNGARIAN FIRMS
 ## Descriptive analysis (3)
-## R script written by Jose Luis Estevez (Linkoping University)
-## Date: April 9th 2021
+## R script written by Jose Luis Estevez (Masaryk University)
+## Date: February 27th 2021
 ########################################################################################################################
 
 # R PACKAGES REQUIRED
@@ -14,8 +14,7 @@ load('tidieddata2.RData')
 
 ########################################################################################################################
 
-# 0) BASIC DESCRIPTIVE STATS OF THE SAMPLE
-
+# BASIC DESCRIPTIVE STATS OF THE SAMPLE
 # Number of nodes per unit
 summary(attributes$group)
 
@@ -56,7 +55,6 @@ for(i in organisation_ID){
 ########################################################################################################################
 
 # 1) DESCRIPTIVE STATS (POSITIVE & NEGATIVE TIES)
-
 # Object to store summary statistics
 pos_mtx_sum <- neg_mtx_sum <- matrix(NA,9,length(organisation_ID),
                                      dimnames=list(c('nodes','missing-tie','density','recip','closure','isolates',
@@ -84,8 +82,8 @@ for(i in organisation_ID){
   neg_mtx_sum[8,i] <- sd(rowSums(networks_mtx[[i]]$negative,na.rm=TRUE)) 
   neg_mtx_sum[9,i] <- sd(colSums(networks_mtx[[i]]$negative,na.rm=TRUE)) 
 }
-write.table(round(pos_mtx_sum,3),'pos_ties.csv',row.names=TRUE,sep=';')
-write.table(round(neg_mtx_sum,3),'neg_ties.csv',row.names=TRUE,sep=';')
+write.table(round(pos_mtx_sum,3),'pos_ties.csv',row.names=TRUE,sep=',')
+write.table(round(neg_mtx_sum,3),'neg_ties.csv',row.names=TRUE,sep=',')
 
 # Out- and in-degree distributions (positive ties)
 par(mfrow=c(3,2))
@@ -100,7 +98,6 @@ for(i in seq_along(networks_mtx)){
 ########################################################################################################################
 
 # 2) DESCRIPTIVE STATS (POSITIVE & NEGATIVE GOSSIP)
-
 # Projections of the positive and negative gossip cubes (sender-receiver, sender-target, and receiver-target)
 gos_pos_sr <- gos_pos_st <- gos_pos_rt <- gos_pos
 gos_neg_sr <- gos_neg_st <- gos_neg_rt <- gos_neg
@@ -151,7 +148,6 @@ gossip_sum_ind
 ########################################################################################################################
 
 # 3) BIVARIATE STATS (NETWORK LEVEL: JACCARD INDICES FOR MATRIX OVERLAP)
-
 # Dyadic: Jaccard indices (matrix overlap)
 jacc_ind <- array(NA,dim=c(6,2,6),
                   dimnames=list(c('pos_sr','pos_st','pos_rt','neg_sr','neg_st','neg_rt'),
@@ -179,7 +175,6 @@ round(apply(jacc_ind,c(1,2),mean),1); apply(jacc_ind,c(1,2),min); apply(jacc_ind
 ########################################################################################################################
 
 # 4) CLUSTER DETECTION (Louvain method)
-
 for(i in seq_along(networks_mtx)){
   networks_mtx[[i]]$clust_louv <- cluster_louvain(graph_from_adjacency_matrix(networks_mtx[[i]]$positive,
                                                                               mode='undirected',diag=FALSE))
@@ -240,7 +235,6 @@ for(i in seq_along(triad_data)){
 ########################################################################################################################
 
 # 5) BROKERS' DETECTION
-
 # Creation of matrices with two roles: broker (betweenness-central actors) and non-broker
 for(i in seq_along(networks_mtx)){
   # Edge betweenness
@@ -277,30 +271,7 @@ for(i in seq_along(networks_mtx)){
   }
 }
 
-# Creation of matrices: broker-broker, broker-non-broker, etc.
-for(x in seq_along(networks_mtx)){
-  networks_mtx[[x]]$cc <- networks_mtx[[x]]$cp <- networks_mtx[[x]]$pc <- networks_mtx[[x]]$pp <- networks_mtx[[x]]$clusters*0
-  for(i in seq_along(networks_mtx[[x]]$roles)){
-    for(j in seq_along(networks_mtx[[x]]$roles)){
-      if(networks_mtx[[x]]$roles[i] == 'broker' & networks_mtx[[x]]$roles[j] == 'broker'){
-        networks_mtx[[x]]$cc[i,j] <- 1
-      }
-      if(networks_mtx[[x]]$roles[i] == 'broker' & networks_mtx[[x]]$roles[j] == 'nonbroker'){
-        networks_mtx[[x]]$cp[i,j] <- 1
-      }
-      if(networks_mtx[[x]]$roles[i] == 'nonbroker' & networks_mtx[[x]]$roles[j] == 'broker'){
-        networks_mtx[[x]]$pc[i,j] <- 1
-      }
-      if(networks_mtx[[x]]$roles[i] == 'nonbroker' & networks_mtx[[x]]$roles[j] == 'nonbroker'){
-        networks_mtx[[x]]$pp[i,j] <- 1
-      }
-    }
-  }
-}
-
-########################################################################################################################
-
-# Visualisation of the networks with communities and core-peripheral nodes detected 
+# Visualisation of the networks with communities and broker nodes detected 
 ntw_plot <- networks_mtx
 
 for(i in seq_along(ntw_plot)){
@@ -309,27 +280,34 @@ for(i in seq_along(ntw_plot)){
   ntw_plot[[i]]$group <- graph_from_adjacency_matrix(ntw_plot[[i]]$group,mode='undirected',diag=FALSE)
   ntw_plot[[i]]$group <- igraph::cluster_louvain(ntw_plot[[i]]$group) # clustering (Louvain method)
   # Show both positive and negative ties
-  ntw_plot[[i]]$vis <- graph_from_adjacency_matrix(ntw_plot[[i]]$positive,mode='directed',diag=FALSE)
+  ntw_plot[[i]]$vis <- graph_from_adjacency_matrix(ntw_plot[[i]]$positive - ntw_plot[[i]]$negative,mode='directed',
+                                                   diag=FALSE,weighted=TRUE)
   # Layout based only on positive ties
   set.seed(0708)
   ntw_plot[[i]]$layout <- layout_with_fr(graph_from_adjacency_matrix(ntw_plot[[i]]$positive,mode='directed'))
   # Customisation of nodes and ties
-  V(ntw_plot[[i]]$vis)$shape <- ifelse(attributes[attributes$group == organisation_ID[[i]],]$hr_leader == 1,'square','circle')
-  V(ntw_plot[[i]]$vis)$color <- ifelse(networks_mtx[[i]]$roles == 'broker','red','yellow')
-  V(ntw_plot[[i]]$vis)$size <- ifelse(networks_mtx[[i]]$roles == 'broker',10,6)
-  E(ntw_plot[[i]]$vis)$color <- 'darkgreen'
+  V(ntw_plot[[i]]$vis)$color <- ifelse(networks_mtx[[i]]$roles == 'broker','gold','royalblue')
+  V(ntw_plot[[i]]$vis)$size <- 7
+  E(ntw_plot[[i]]$vis)$color <- as.character(factor(E(ntw_plot[[i]]$vis)$weight,levels=c(-1,1),labels=c('red','black')))
   E(ntw_plot[[i]]$vis)$width <- 1
-  # Visualisation
-  jpeg(filename=paste('Unit',i,'.jpeg',sep=''),width=4,height=4,units='in',res=1000)
-  plot(ntw_plot[[i]]$vis,mark.groups=ntw_plot[[i]]$group,
-       edge.arrow.size=.2,vertex.label=NA,layout=ntw_plot[[i]]$layout)
-  dev.off()
+  E(ntw_plot[[i]]$vis)$lty <- ifelse(E(ntw_plot[[i]]$vis)$weight==1,1,2)
 }
+
+# Visualisation
+jpeg(filename='Networks.jpeg',width=12,height=8,units='in',res=1000)
+par(mfrow=c(2,3))
+for(i in seq_along(ntw_plot)){
+plot(ntw_plot[[i]]$vis,mark.groups=ntw_plot[[i]]$group,
+     edge.arrow.size=.2,vertex.label=NA,layout=ntw_plot[[i]]$layout,
+     main=paste("Unit",LETTERS[i],sep=' '))
+}
+legend("bottomright",bty="o",legend=c('broker','non-broker'),fill=c('gold','royalblue'))
+
+dev.off()
 
 ########################################################################################################################
 
 # 6) DESCRIPTIVE STATISTICS
-
 # 6.1) Positive gossip
 # Keep only the gossip triads
 CP_descrip <- triad_data
@@ -352,18 +330,6 @@ colnames(com_descrip) <- c('III','II0','IOI','IOO','OII','OIO','OOI','OOO')
 com_descrip <- com_descrip[,c('III','IOO','OIO','OOI','OOO')]
 com_descrip
 round(colSums(com_descrip)/sum(com_descrip)*100,2)
-
-# Centre-periphery: descriptive (sender, receiver, target)
-for(i in seq_along(CP_descrip)){
-  CP_descrip[[i]] <- as.vector(table(CP_descrip[[i]]$sender_role,
-                                     CP_descrip[[i]]$receiver_role,
-                                     CP_descrip[[i]]$target_role))
-}
-CP_descrip <- do.call('rbind',CP_descrip)
-CP_descrip <- CP_descrip[,c(1,5,3,7,2,6,4,8)]
-colnames(CP_descrip) <- c('BBB','BBN','BNB','BNN','NBB','NBN','NNB','NNN')
-CP_descrip
-round(colSums(CP_descrip)/sum(CP_descrip)*100,2)
 
 # 6.2) Negative gossip
 # Keep only the gossip triads
@@ -388,22 +354,9 @@ com_descrip <- com_descrip[,c('III','IOO','OIO','OOI','OOO')]
 com_descrip
 round(colSums(com_descrip)/sum(com_descrip)*100,2)
 
-# Centre-periphery: descriptive (sender, receiver, target)
-for(i in seq_along(CP_descrip)){
-  CP_descrip[[i]] <- as.vector(table(CP_descrip[[i]]$sender_role,
-                                     CP_descrip[[i]]$receiver_role,
-                                     CP_descrip[[i]]$target_role))
-}
-CP_descrip <- do.call('rbind',CP_descrip)
-CP_descrip <- CP_descrip[,c(1,5,3,7,2,6,4,8)]
-colnames(CP_descrip) <- c('BBB','BBN','BNB','BNN','NBB','NBN','NNB','NNN')
-CP_descrip
-round(colSums(CP_descrip)/sum(CP_descrip)*100,2)
-
 ########################################################################################################################
 
 # 7) BROKERS' PROPERTIES
-
 brokers <- pos_odeg <- pos_ideg <- neg_odeg <- neg_ideg <- networks_mtx
 
 for(i in seq_along(brokers)){
@@ -425,7 +378,7 @@ brokers$pos_odeg <- pos_odeg
 brokers$pos_ideg <- pos_ideg
 brokers$neg_odeg <- neg_odeg
 brokers$neg_ideg <- neg_ideg
-brokers$ID <- rownames(brokers)
+brokers$ID <- attributes$responder
 
 attributes <- merge(x=attributes,y=brokers,by.x='responder',by.y='ID',all.x=TRUE)
 
@@ -435,12 +388,12 @@ summary(attributes$brokers)
 # Female brokers
 sum(attributes[attributes$brokers == 'broker',]$woman)
 sum(attributes[attributes$brokers == 'nonbroker',]$woman)
-prop.test(x=c(8,33),n=c(28,100),alternative='two.sided')
+prop.test(x=c(6,35),n=c(32,96),alternative='two.sided')
 
 # Brokers in management
 sum(attributes[attributes$brokers == 'broker',]$hr_leader)
 sum(attributes[attributes$brokers == 'nonbroker',]$hr_leader)
-prop.test(x=c(16,18),n=c(28,100),alternative='two.sided')
+prop.test(x=c(10,24),n=c(32,96),alternative='two.sided')
 
 # Age of brokers
 t.test(x=(2018 - attributes[attributes$brokers == 'broker',]$birth_year),
@@ -480,7 +433,7 @@ range(attributes[attributes$brokers == 'nonbroker',]$neg_ideg,na.rm=TRUE)
 
 # Removal of unnecessary objects
 rm(pos_mtx_sum);rm(neg_mtx_sum);rm(gos_pos_sr);rm(gos_pos_st);rm(gos_pos_rt);rm(gos_neg_sr);rm(gos_neg_st);rm(gos_neg_rt)
-rm(gossip_sum_ind);rm(jacc_ind);rm(i);rm(j);rm(ntw_plot);rm(s);rm(r);rm(t);rm(x);rm(com_descrip);rm(CP_descrip)
+rm(gossip_sum_ind);rm(jacc_ind);rm(i);rm(j);rm(ntw_plot);rm(s);rm(r);rm(t);rm(com_descrip);rm(CP_descrip)
 rm(brokers);rm(pos_odeg);rm(pos_ideg);rm(neg_odeg);rm(neg_ideg)
 
 # Save image
