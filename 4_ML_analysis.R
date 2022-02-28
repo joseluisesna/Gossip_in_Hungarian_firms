@@ -59,6 +59,26 @@ triad_data$target_iso <- 1*triad_data$target %in% names(isolates)
 
 ########################################################################################################################
 
+# Gossip by broker status
+gossip_broker <- as.data.frame(matrix(NA,nrow=6,ncol=8))
+rownames(gossip_broker) <- c('Unit A','Unit B','Unit C','Unit D','Unit E','Unit F')
+colnames(gossip_broker) <- c('pos_sen','pos_rec','pos_tar','pos','neg_sen','neg_rec','neg_tar','neg')
+
+gossip_broker[,1] <- table(triad_data[triad_data$gossip == 1,]$unit,triad_data[triad_data$gossip == 1,]$sender_role)[,'broker']
+gossip_broker[,2] <- table(triad_data[triad_data$gossip == 1,]$unit,triad_data[triad_data$gossip == 1,]$receiver_role)[,'broker']
+gossip_broker[,3] <- table(triad_data[triad_data$gossip == 1,]$unit,triad_data[triad_data$gossip == 1,]$target_role)[,'broker']
+gossip_broker[,4] <- table(triad_data[triad_data$gossip == 1,]$unit)
+
+gossip_broker[,5] <- table(triad_data[triad_data$gossip == -1,]$unit,triad_data[triad_data$gossip == -1,]$sender_role)[,'broker']
+gossip_broker[,6] <- table(triad_data[triad_data$gossip == -1,]$unit,triad_data[triad_data$gossip == -1,]$receiver_role)[,'broker']
+gossip_broker[,7] <- table(triad_data[triad_data$gossip == -1,]$unit,triad_data[triad_data$gossip == -1,]$target_role)[,'broker']
+gossip_broker[,8] <- table(triad_data[triad_data$gossip == -1,]$unit)
+
+gossip_broker
+colSums(gossip_broker)
+
+########################################################################################################################
+
 # 2) MODELLING 
 
 # 2.0) Null model (only random effects)
