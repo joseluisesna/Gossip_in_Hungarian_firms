@@ -6,7 +6,7 @@
 ########################################################################################################################
 
 # R PACKAGES REQUIRED
-library(sna);library(igraph)
+library(sna);library(igraph);library(ggpubr)
 
 # DATA LOADING
 rm(list=ls())
@@ -251,12 +251,12 @@ for(i in seq_along(networks_mtx)){
 }
 
 # Labelling the roles
-networks_mtx[[1]]$roles <- factor(networks_mtx[[1]]$roles,levels=c(1,2),labels=c('broker','nonbroker'))
-networks_mtx[[2]]$roles <- factor(networks_mtx[[2]]$roles,levels=c(1,2),labels=c('broker','nonbroker'))
-networks_mtx[[3]]$roles <- factor(networks_mtx[[3]]$roles,levels=c(2,1),labels=c('broker','nonbroker'))
-networks_mtx[[4]]$roles <- factor(networks_mtx[[4]]$roles,levels=c(1,2),labels=c('broker','nonbroker'))
-networks_mtx[[5]]$roles <- factor(networks_mtx[[5]]$roles,levels=c(2,1),labels=c('broker','nonbroker'))
-networks_mtx[[6]]$roles <- factor(networks_mtx[[6]]$roles,levels=c(2,1),labels=c('broker','nonbroker'))
+networks_mtx[[1]]$roles <- factor(networks_mtx[[1]]$roles,levels=c(1,2),labels=c('broker','non-broker'))
+networks_mtx[[2]]$roles <- factor(networks_mtx[[2]]$roles,levels=c(1,2),labels=c('broker','non-broker'))
+networks_mtx[[3]]$roles <- factor(networks_mtx[[3]]$roles,levels=c(2,1),labels=c('broker','non-broker'))
+networks_mtx[[4]]$roles <- factor(networks_mtx[[4]]$roles,levels=c(1,2),labels=c('broker','non-broker'))
+networks_mtx[[5]]$roles <- factor(networks_mtx[[5]]$roles,levels=c(2,1),labels=c('broker','non-broker'))
+networks_mtx[[6]]$roles <- factor(networks_mtx[[6]]$roles,levels=c(2,1),labels=c('broker','non-broker'))
 
 # Extraction of roles for the triadic data
 for(i in seq_along(triad_data)){
@@ -327,9 +327,18 @@ for(i in seq_along(com_descrip)){
 com_descrip <- do.call('rbind',com_descrip)
 com_descrip <- com_descrip[,c(8,4,6,2,7,3,5,1)]
 colnames(com_descrip) <- c('III','II0','IOI','IOO','OII','OIO','OOI','OOO')
-com_descrip <- com_descrip[,c('III','IOO','OIO','OOI','OOO')]
-com_descrip
+com_descrip <- com_descrip[,c('IOO','OIO','OOI','III','OOO')]
+com_descrip <- as.data.frame(com_descrip)
 round(colSums(com_descrip)/sum(com_descrip)*100,2)
+
+# Visualisation
+names(com_descrip) <- c('sender-receiver','sender-target','receiver-target','sender-receiver-target','none')
+rownames(com_descrip) <- c('Unit A','Unit B','Unit C','Unit D','Unit E','Unit F')
+
+p1 <- ggballoonplot(com_descrip,fill='value',size=15,show.label = TRUE,
+                    legend = 'bottom', legend.title='Frequency of positive gossip') + 
+  gradient_fill(c("white","olivedrab1" ,"palegreen","springgreen3", "chartreuse4")) 
+
 
 # 6.2) Negative gossip
 # Keep only the gossip triads
@@ -350,9 +359,21 @@ for(i in seq_along(com_descrip)){
 com_descrip <- do.call('rbind',com_descrip)
 com_descrip <- com_descrip[,c(8,4,6,2,7,3,5,1)]
 colnames(com_descrip) <- c('III','II0','IOI','IOO','OII','OIO','OOI','OOO')
-com_descrip <- com_descrip[,c('III','IOO','OIO','OOI','OOO')]
-com_descrip
+com_descrip <- com_descrip[,c('IOO','OIO','OOI','III','OOO')]
+com_descrip <- as.data.frame(com_descrip)
 round(colSums(com_descrip)/sum(com_descrip)*100,2)
+
+# Visualisation
+names(com_descrip) <- c('sender-receiver','sender-target','receiver-target','sender-receiver-target','none')
+rownames(com_descrip) <- c('Unit A','Unit B','Unit C','Unit D','Unit E','Unit F')
+
+p2 <- ggballoonplot(com_descrip,fill='value',size=15,show.label = TRUE,
+                    legend = 'bottom', legend.title='Frequency of negative gossip') + 
+  gradient_fill(c("white","gold" ,"orange","tomato", "red")) 
+
+jpeg(filename='Gossip by group.jpeg',width=12,height=7,units='in',res=500)
+ggarrange(p1,p2,ncol=2,labels=c('A','B'))
+dev.off()
 
 ########################################################################################################################
 
@@ -387,54 +408,132 @@ summary(attributes$brokers)
 
 # Female brokers
 sum(attributes[attributes$brokers == 'broker',]$woman)
-sum(attributes[attributes$brokers == 'nonbroker',]$woman)
-prop.test(x=c(6,35),n=c(32,96),alternative='two.sided')
+sum(attributes[attributes$brokers == 'non-broker',]$woman)
+prop.test(x=c(8,33),n=c(28,100),alternative='two.sided')
 
 # Brokers in management
 sum(attributes[attributes$brokers == 'broker',]$hr_leader)
-sum(attributes[attributes$brokers == 'nonbroker',]$hr_leader)
-prop.test(x=c(10,24),n=c(32,96),alternative='two.sided')
+sum(attributes[attributes$brokers == 'non-broker',]$hr_leader)
+prop.test(x=c(16,18),n=c(28,100),alternative='two.sided')
 
 # Age of brokers
 t.test(x=(2018 - attributes[attributes$brokers == 'broker',]$birth_year),
-       y=(2018 - attributes[attributes$brokers == 'nonbroker',]$birth_year),alternative='two.sided')
+       y=(2018 - attributes[attributes$brokers == 'non-broker',]$birth_year),alternative='two.sided')
 range(2018 - attributes[attributes$brokers == 'broker',]$birth_year)
-range(2018 - attributes[attributes$brokers == 'nonbroker',]$birth_year)
+range(2018 - attributes[attributes$brokers == 'non-broker',]$birth_year)
 
 # Tenure of brokers
 t.test(x=(attributes[attributes$brokers == 'broker',]$tenure),
-       y=(attributes[attributes$brokers == 'nonbroker',]$tenure),alternative='two.sided')
+       y=(attributes[attributes$brokers == 'non-broker',]$tenure),alternative='two.sided')
 range(attributes[attributes$brokers == 'broker',]$tenure,na.rm=TRUE)
-range(attributes[attributes$brokers == 'nonbroker',]$tenure,na.rm=TRUE)
+range(attributes[attributes$brokers == 'non-broker',]$tenure,na.rm=TRUE)
 
 # Degree differences
 # Positive outdegree
 t.test(x=(attributes[attributes$brokers == 'broker',]$pos_odeg),
-       y=(attributes[attributes$brokers == 'nonbroker',]$pos_odeg),alternative='two.sided')
+       y=(attributes[attributes$brokers == 'non-broker',]$pos_odeg),alternative='two.sided')
 range(attributes[attributes$brokers == 'broker',]$pos_odeg,na.rm=TRUE)
-range(attributes[attributes$brokers == 'nonbroker',]$pos_odeg,na.rm=TRUE)
+range(attributes[attributes$brokers == 'non-broker',]$pos_odeg,na.rm=TRUE)
 # Positive indegree
 t.test(x=(attributes[attributes$brokers == 'broker',]$pos_ideg),
-       y=(attributes[attributes$brokers == 'nonbroker',]$pos_ideg),alternative='two.sided')
+       y=(attributes[attributes$brokers == 'non-broker',]$pos_ideg),alternative='two.sided')
 range(attributes[attributes$brokers == 'broker',]$pos_ideg,na.rm=TRUE)
-range(attributes[attributes$brokers == 'nonbroker',]$pos_ideg,na.rm=TRUE)
+range(attributes[attributes$brokers == 'non-broker',]$pos_ideg,na.rm=TRUE)
 # Negative outdegree
 t.test(x=(attributes[attributes$brokers == 'broker',]$neg_odeg),
-       y=(attributes[attributes$brokers == 'nonbroker',]$neg_odeg),alternative='two.sided')
+       y=(attributes[attributes$brokers == 'non-broker',]$neg_odeg),alternative='two.sided')
 range(attributes[attributes$brokers == 'broker',]$neg_odeg,na.rm=TRUE)
-range(attributes[attributes$brokers == 'nonbroker',]$neg_odeg,na.rm=TRUE)
+range(attributes[attributes$brokers == 'non-broker',]$neg_odeg,na.rm=TRUE)
 # Negative indegree
 t.test(x=(attributes[attributes$brokers == 'broker',]$neg_ideg),
-       y=(attributes[attributes$brokers == 'nonbroker',]$neg_ideg),alternative='two.sided')
+       y=(attributes[attributes$brokers == 'non-broker',]$neg_ideg),alternative='two.sided')
 range(attributes[attributes$brokers == 'broker',]$neg_ideg,na.rm=TRUE)
-range(attributes[attributes$brokers == 'nonbroker',]$neg_ideg,na.rm=TRUE)
+range(attributes[attributes$brokers == 'non-broker',]$neg_ideg,na.rm=TRUE)
+
+# Visualisation
+no.background <- theme_bw()+
+  theme(plot.background=element_blank(),panel.grid.major=element_blank(),
+        panel.grid.minor=element_blank(),panel.border=element_blank())+
+  theme(axis.line=element_line(color='black'))+
+  theme(strip.text.x=element_text(colour='white',face='bold'))+
+  theme(strip.background=element_rect(fill='black'))
+
+attributes$age <- 2018 - attributes$birth_year
+
+b1 <- ggplot(data=attributes,aes(x=brokers,group=brokers,y=age,colour=brokers,fill=brokers))+
+  geom_point(position = position_jitterdodge(dodge.width = 0, jitter.width = 0.75),size=3)+  
+  geom_boxplot(colour='black',alpha=.5)+
+  geom_signif(comparisons = list(c("broker", "non-broker")),map_signif_level=TRUE,textsize=4,colour='black')+
+  no.background+
+  labs(fill='',colour='')+xlab('')+ylab('Age')+
+  scale_colour_manual(values = c('goldenrod','dodgerblue'))+
+  scale_fill_manual(values = c('gold','royalblue'))+
+  theme(axis.title.x=element_blank(),axis.text.x=element_blank(),axis.ticks.x=element_blank())
+
+b2 <- ggplot(data=attributes,aes(x=brokers,group=brokers,y=tenure,colour=brokers,fill=brokers))+
+  geom_point(position = position_jitterdodge(dodge.width = 0, jitter.width = 0.75),size=3)+  
+  geom_boxplot(colour='black',alpha=.5)+
+  geom_signif(comparisons = list(c("broker", "non-broker")),map_signif_level=TRUE,textsize=4,colour='black')+
+  no.background+
+  labs(fill='',colour='')+xlab('')+ylab('Tenure')+
+  scale_colour_manual(values = c('goldenrod','dodgerblue'))+
+  scale_fill_manual(values = c('gold','royalblue'))+
+  theme(axis.title.x=element_blank(),axis.text.x=element_blank(),axis.ticks.x=element_blank())
+
+b3 <- ggplot(data=attributes,aes(x=brokers,group=brokers,y=pos_odeg,colour=brokers,fill=brokers))+
+  geom_point(position = position_jitterdodge(dodge.width = 0, jitter.width = 0.75),size=3)+  
+  geom_boxplot(colour='black',alpha=.5)+
+  geom_signif(comparisons = list(c("broker", "non-broker")),map_signif_level=TRUE,textsize=4,colour='black')+
+  no.background+
+  labs(fill='',colour='')+xlab('')+ylab('Positive network out-degree')+
+  scale_colour_manual(values = c('goldenrod','dodgerblue'))+
+  scale_fill_manual(values = c('gold','royalblue'))+
+  theme(axis.title.x=element_blank(),axis.text.x=element_blank(),axis.ticks.x=element_blank())
+
+b4 <- ggplot(data=attributes,aes(x=brokers,group=brokers,y=pos_ideg,colour=brokers,fill=brokers))+
+  geom_point(position = position_jitterdodge(dodge.width = 0, jitter.width = 0.75),size=3)+  
+  geom_boxplot(colour='black',alpha=.5)+
+  geom_signif(comparisons = list(c("broker", "non-broker")),map_signif_level=TRUE,textsize=4,colour='black')+
+  no.background+
+  labs(fill='',colour='')+xlab('')+ylab('Positive network in-degree')+
+  scale_colour_manual(values = c('goldenrod','dodgerblue'))+
+  scale_fill_manual(values = c('gold','royalblue'))+
+  theme(axis.title.x=element_blank(),axis.text.x=element_blank(),axis.ticks.x=element_blank())
+
+b5 <- ggplot(data=attributes,aes(x=brokers,group=brokers,y=neg_odeg,colour=brokers,fill=brokers))+
+  geom_point(position = position_jitterdodge(dodge.width = 0, jitter.width = 0.75),size=3)+  
+  geom_boxplot(colour='black',alpha=.5)+
+  geom_signif(comparisons = list(c("broker", "non-broker")),map_signif_level=TRUE,textsize=4,colour='black')+
+  no.background+
+  labs(fill='',colour='')+xlab('')+ylab('Negative network out-degree')+
+  scale_colour_manual(values = c('goldenrod','dodgerblue'))+
+  scale_fill_manual(values = c('gold','royalblue'))+
+  theme(axis.title.x=element_blank(),axis.text.x=element_blank(),axis.ticks.x=element_blank())
+
+b6 <- ggplot(data=attributes,aes(x=brokers,group=brokers,y=neg_ideg,colour=brokers,fill=brokers))+
+  geom_point(position = position_jitterdodge(dodge.width = 0, jitter.width = 0.75),size=3)+  
+  geom_boxplot(colour='black',alpha=.5)+
+  geom_signif(comparisons = list(c("broker", "non-broker")),map_signif_level=TRUE,textsize=4,colour='black')+
+  no.background+
+  labs(fill='',colour='')+xlab('')+ylab('Negative network in-degree')+
+  scale_colour_manual(values = c('goldenrod','dodgerblue'))+
+  scale_fill_manual(values = c('gold','royalblue'))+
+  theme(axis.title.x=element_blank(),axis.text.x=element_blank(),axis.ticks.x=element_blank())
+
+jpeg(filename='Brokers vs. non-brokers.jpeg',width=12,height=6,units='in',res=500)
+ggarrange(b1,b2,b3,b4,b5,b6,
+          labels=c('A','B','C','D','E','F'),
+          common.legend = TRUE,
+          nrow=1,ncol=6)
+dev.off()
 
 ########################################################################################################################
 
 # Removal of unnecessary objects
 rm(pos_mtx_sum);rm(neg_mtx_sum);rm(gos_pos_sr);rm(gos_pos_st);rm(gos_pos_rt);rm(gos_neg_sr);rm(gos_neg_st);rm(gos_neg_rt)
-rm(gossip_sum_ind);rm(jacc_ind);rm(i);rm(j);rm(ntw_plot);rm(s);rm(r);rm(t);rm(com_descrip);rm(CP_descrip)
-rm(brokers);rm(pos_odeg);rm(pos_ideg);rm(neg_odeg);rm(neg_ideg)
-
+rm(gossip_sum_ind);rm(jacc_ind);rm(i);rm(j);rm(ntw_plot);rm(s);rm(r);rm(t);rm(com_descrip);rm(CP_descrip);rm(brokers)
+rm(pos_odeg);rm(pos_ideg);rm(neg_odeg);rm(neg_ideg);rm(p1);rm(p2);rm(b1);rm(b2);rm(b3);rm(b4);rm(b5);rm(b6)
+rm(no.background);rm(rec_F103)
+  
 # Save image
 save.image('modellingdata.RData')

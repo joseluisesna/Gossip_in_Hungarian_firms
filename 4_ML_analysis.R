@@ -30,9 +30,9 @@ triad_data$ST_neg <- 1*(triad_data$ST == -1) # negative tie (ST)
 triad_data$RT_neg <- 1*(triad_data$RT == -1) # negative tie (RT)
 
 # re-level (nonbroker as the reference level)
-triad_data$sender_role <- factor(triad_data$sender_role,levels=c('nonbroker','broker'))
-triad_data$receiver_role <- factor(triad_data$receiver_role,levels=c('nonbroker','broker'))
-triad_data$target_role <- factor(triad_data$target_role,levels=c('nonbroker','broker'))
+triad_data$sender_role <- factor(triad_data$sender_role,levels=c('non-broker','broker'))
+triad_data$receiver_role <- factor(triad_data$receiver_role,levels=c('non-broker','broker'))
+triad_data$target_role <- factor(triad_data$target_role,levels=c('non-broker','broker'))
 
 # Addition of gender and hierarchical position
 triad_data <- merge(x=triad_data,y=attributes[,c('responder','woman')],by.x='sender',by.y='responder',all.x=TRUE)
