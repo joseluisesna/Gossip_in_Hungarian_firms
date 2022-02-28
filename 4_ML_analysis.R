@@ -98,7 +98,6 @@ results_pos2 <- glmer(data=triad_data,pos_gossip ~
                         SR_neg + ST_neg + RT_neg +
                         receiver_boss + sender_boss + target_boss +
                         receiver_woman + sender_woman + target_woman +
-                        receiver_iso + sender_iso + target_iso +
                         samegroup_SR + samegroup_ST + samegroup_RT + 
                         (1|unit) + (1|unit:receiver) + (1|unit:sender) + (1|unit:target),
                       family=binomial(link='logit'))
@@ -108,7 +107,6 @@ results_neg2 <- glmer(data=triad_data,neg_gossip ~
                         SR_neg + ST_neg + RT_neg +
                         receiver_boss + sender_boss + target_boss +
                         receiver_woman + sender_woman + target_woman +
-                        receiver_iso + sender_iso + target_iso +
                         samegroup_SR + samegroup_ST + samegroup_RT +
                         (1|unit) + (1|unit:receiver) + (1|unit:sender) + (1|unit:target),
                       family=binomial(link='logit'))
@@ -122,10 +120,10 @@ results_pos3 <- glmer(data=triad_data,pos_gossip ~
                         SR_pos + ST_pos + RT_pos +
                         SR_neg + ST_neg + RT_neg +
                         receiver_boss + sender_boss + target_boss +
-                        receiver_woman + sender_woman + target_woman +                        
+                        receiver_woman + sender_woman + target_woman +   
+                        samegroup_SR + samegroup_ST + samegroup_RT +
                         receiver_role + sender_role + target_role +
                         receiver_iso + sender_iso + target_iso +
-                        samegroup_SR + samegroup_ST + samegroup_RT + 
                         (1|unit) + (1|unit:receiver) + (1|unit:sender) + (1|unit:target),
                       family=binomial(link='logit'))
 summary(results_pos3)
@@ -133,10 +131,10 @@ results_neg3 <- glmer(data=triad_data,neg_gossip ~
                         SR_pos + ST_pos + RT_pos +
                         SR_neg + ST_neg + RT_neg +
                         receiver_boss + sender_boss + target_boss +
-                        receiver_woman + sender_woman + target_woman +                        
+                        receiver_woman + sender_woman + target_woman +   
+                        samegroup_SR + samegroup_ST + samegroup_RT +
                         receiver_role + sender_role + target_role +
-                        receiver_iso + sender_iso + target_iso +
-                        samegroup_SR + samegroup_ST + samegroup_RT + 
+                        receiver_iso + sender_iso + target_iso + 
                         (1|unit) + (1|unit:receiver) + (1|unit:sender) + (1|unit:target),
                       family=binomial(link='logit'))
 summary(results_neg3)
