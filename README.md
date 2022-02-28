@@ -14,6 +14,7 @@ R (code was last run with R version 4.1.2 in RStudio 2021.09.0)
 - viridis (0.6.2)
 - sna (2.6)
 - igraph (1.2.7)
+- ggpubr (0.4.0)
 - lme4 (1.1-27.1)
 
 **File list**
