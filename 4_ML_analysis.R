@@ -183,21 +183,22 @@ effsize_neg3$gossiptype <- 'Negative gossip'
 effsize_plot <- rbind(effsize_pos3,effsize_neg3)
 
 effsize_plot$Parameter <- factor(effsize_plot$Parameter,
-                                 levels=c('target_iso','receiver_iso','sender_iso',
-                                          'target_rolebroker','receiver_rolebroker','sender_rolebroker',
-                                          'samegroup_SR:samegroup_ST','samegroup_RT','samegroup_ST','samegroup_SR',
+                                 levels=c('RT_neg','ST_neg','SR_neg',
+                                          'RT_pos','ST_pos','SR_pos',
+                                          'target_iso','receiver_iso','sender_iso',
                                           'target_boss','receiver_boss','sender_boss',
                                           'target_woman','receiver_woman','sender_woman',
-                                          'RT_neg','ST_neg','SR_neg',
-                                          'RT_pos','ST_pos','SR_pos','(Intercept)'),
-                                 labels=c('Isolate (target)','Isolate (receiver)','Isolate (sender)',
+                                          'target_rolebroker','receiver_rolebroker','sender_rolebroker',
+                                          'samegroup_SR:samegroup_ST','samegroup_RT','samegroup_ST','samegroup_SR',
+                                          '(Intercept)'),
+                                 labels=c('Negative tie (receiver-target)','Negative tie (sender-target)','Negative tie (sender-receiver)',
+                                          'Positive tie (receiver-target)','Positive tie (sender-target)','Positive tie (sender-receiver)',
+                                          'Isolate (target)','Isolate (receiver)','Isolate (sender)',
+                                          'Manager (target)','Manager (receiver)','Manager (sender)',
+                                          'Woman (target)','Woman (receiver)','Woman (sender)',
                                           'Broker (target)','Broker (receiver)','Broker (sender)',
                                           'Same group (sender-receiver-target)','Same group (receiver-target)',
                                           'Same group (sender-target)','Same group (sender-receiver)',
-                                          'Manager (target)','Manager (receiver)','Manager (sender)',
-                                          'Woman (target)','Woman (receiver)','Woman (sender)',
-                                          'Negative tie (receiver-target)','Negative tie (sender-target)','Negative tie (sender-receiver)',
-                                          'Positive tie (receiver-target)','Positive tie (sender-target)','Positive tie (sender-receiver)',
                                           'Intercept'))
 effsize_plot$gossiptype <- factor(effsize_plot$gossiptype,levels=c('Positive gossip','Negative gossip'))
 
