@@ -332,7 +332,8 @@ com_descrip <- as.data.frame(com_descrip)
 round(colSums(com_descrip)/sum(com_descrip)*100,2)
 
 # Visualisation
-names(com_descrip) <- c('sender-receiver','sender-target','receiver-target','sender-receiver-target','none')
+names(com_descrip) <- c('Same group (sender-receiver)','Same group (sender-target)','Same group (receiver-target)',
+                        'Same group (sender-receiver-target)','Three parties in different groups')
 rownames(com_descrip) <- c('Unit A','Unit B','Unit C','Unit D','Unit E','Unit F')
 
 p1 <- ggballoonplot(com_descrip,fill='value',size=15,show.label = TRUE,
@@ -364,15 +365,16 @@ com_descrip <- as.data.frame(com_descrip)
 round(colSums(com_descrip)/sum(com_descrip)*100,2)
 
 # Visualisation
-names(com_descrip) <- c('sender-receiver','sender-target','receiver-target','sender-receiver-target','none')
+names(com_descrip) <- c('Same group (sender-receiver)','Same group (sender-target)','Same group (receiver-target)',
+                        'Same group (sender-receiver-target)','Three parties in different groups')
 rownames(com_descrip) <- c('Unit A','Unit B','Unit C','Unit D','Unit E','Unit F')
 
 p2 <- ggballoonplot(com_descrip,fill='value',size=15,show.label = TRUE,
                     legend = 'bottom', legend.title='Frequency of negative gossip') + 
   gradient_fill(c("white","gold" ,"orange","tomato", "red")) 
 
-jpeg(filename='Gossip by group.jpeg',width=12,height=7,units='in',res=500)
-ggarrange(p1,p2,ncol=2,labels=c('A','B'))
+jpeg(filename='Gossip by group.jpeg',width=13,height=7,units='in',res=500)
+ggarrange(p1,p2,ncol=2,labels=c('',''))
 dev.off()
 
 ########################################################################################################################
@@ -461,7 +463,7 @@ no.background <- theme_bw()+
 attributes$age <- 2018 - attributes$birth_year
 
 b1 <- ggplot(data=attributes,aes(x=brokers,group=brokers,y=age,colour=brokers,fill=brokers))+
-  geom_point(position = position_jitterdodge(dodge.width = 0, jitter.width = 0.75),size=3)+  
+  geom_point(position = position_jitterdodge(dodge.width = 0, jitter.width = 0.75),size=2)+  
   geom_boxplot(colour='black',alpha=.5)+
   geom_signif(comparisons = list(c("broker", "non-broker")),map_signif_level=TRUE,textsize=4,colour='black')+
   no.background+
@@ -471,7 +473,7 @@ b1 <- ggplot(data=attributes,aes(x=brokers,group=brokers,y=age,colour=brokers,fi
   theme(axis.title.x=element_blank(),axis.text.x=element_blank(),axis.ticks.x=element_blank())
 
 b2 <- ggplot(data=attributes,aes(x=brokers,group=brokers,y=tenure,colour=brokers,fill=brokers))+
-  geom_point(position = position_jitterdodge(dodge.width = 0, jitter.width = 0.75),size=3)+  
+  geom_point(position = position_jitterdodge(dodge.width = 0, jitter.width = 0.75),size=2)+  
   geom_boxplot(colour='black',alpha=.5)+
   geom_signif(comparisons = list(c("broker", "non-broker")),map_signif_level=TRUE,textsize=4,colour='black')+
   no.background+
@@ -481,7 +483,7 @@ b2 <- ggplot(data=attributes,aes(x=brokers,group=brokers,y=tenure,colour=brokers
   theme(axis.title.x=element_blank(),axis.text.x=element_blank(),axis.ticks.x=element_blank())
 
 b3 <- ggplot(data=attributes,aes(x=brokers,group=brokers,y=pos_odeg,colour=brokers,fill=brokers))+
-  geom_point(position = position_jitterdodge(dodge.width = 0, jitter.width = 0.75),size=3)+  
+  geom_point(position = position_jitterdodge(dodge.width = 0, jitter.width = 0.75),size=2)+  
   geom_boxplot(colour='black',alpha=.5)+
   geom_signif(comparisons = list(c("broker", "non-broker")),map_signif_level=TRUE,textsize=4,colour='black')+
   no.background+
@@ -491,7 +493,7 @@ b3 <- ggplot(data=attributes,aes(x=brokers,group=brokers,y=pos_odeg,colour=broke
   theme(axis.title.x=element_blank(),axis.text.x=element_blank(),axis.ticks.x=element_blank())
 
 b4 <- ggplot(data=attributes,aes(x=brokers,group=brokers,y=pos_ideg,colour=brokers,fill=brokers))+
-  geom_point(position = position_jitterdodge(dodge.width = 0, jitter.width = 0.75),size=3)+  
+  geom_point(position = position_jitterdodge(dodge.width = 0, jitter.width = 0.75),size=2)+  
   geom_boxplot(colour='black',alpha=.5)+
   geom_signif(comparisons = list(c("broker", "non-broker")),map_signif_level=TRUE,textsize=4,colour='black')+
   no.background+
@@ -501,7 +503,7 @@ b4 <- ggplot(data=attributes,aes(x=brokers,group=brokers,y=pos_ideg,colour=broke
   theme(axis.title.x=element_blank(),axis.text.x=element_blank(),axis.ticks.x=element_blank())
 
 b5 <- ggplot(data=attributes,aes(x=brokers,group=brokers,y=neg_odeg,colour=brokers,fill=brokers))+
-  geom_point(position = position_jitterdodge(dodge.width = 0, jitter.width = 0.75),size=3)+  
+  geom_point(position = position_jitterdodge(dodge.width = 0, jitter.width = 0.75),size=2)+  
   geom_boxplot(colour='black',alpha=.5)+
   geom_signif(comparisons = list(c("broker", "non-broker")),map_signif_level=TRUE,textsize=4,colour='black')+
   no.background+
@@ -511,7 +513,7 @@ b5 <- ggplot(data=attributes,aes(x=brokers,group=brokers,y=neg_odeg,colour=broke
   theme(axis.title.x=element_blank(),axis.text.x=element_blank(),axis.ticks.x=element_blank())
 
 b6 <- ggplot(data=attributes,aes(x=brokers,group=brokers,y=neg_ideg,colour=brokers,fill=brokers))+
-  geom_point(position = position_jitterdodge(dodge.width = 0, jitter.width = 0.75),size=3)+  
+  geom_point(position = position_jitterdodge(dodge.width = 0, jitter.width = 0.75),size=2)+  
   geom_boxplot(colour='black',alpha=.5)+
   geom_signif(comparisons = list(c("broker", "non-broker")),map_signif_level=TRUE,textsize=4,colour='black')+
   no.background+
@@ -522,7 +524,7 @@ b6 <- ggplot(data=attributes,aes(x=brokers,group=brokers,y=neg_ideg,colour=broke
 
 jpeg(filename='Brokers vs. non-brokers.jpeg',width=12,height=6,units='in',res=500)
 ggarrange(b1,b2,b3,b4,b5,b6,
-          labels=c('A','B','C','D','E','F'),
+          labels=c('','','','','',''),
           common.legend = TRUE,
           nrow=1,ncol=6)
 dev.off()
