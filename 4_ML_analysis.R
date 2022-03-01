@@ -118,7 +118,7 @@ results_pos2 <- glmer(data=triad_data,pos_gossip ~
                         SR_neg + ST_neg + RT_neg +
                         receiver_boss + sender_boss + target_boss +
                         receiver_woman + sender_woman + target_woman +
-                        samegroup_SR + samegroup_ST + samegroup_RT + 
+                        samegroup_SR + samegroup_ST + samegroup_RT + samegroup_SR:samegroup_ST +
                         (1|unit) + (1|unit:receiver) + (1|unit:sender) + (1|unit:target),
                       family=binomial(link='logit'))
 summary(results_pos2)
@@ -127,7 +127,7 @@ results_neg2 <- glmer(data=triad_data,neg_gossip ~
                         SR_neg + ST_neg + RT_neg +
                         receiver_boss + sender_boss + target_boss +
                         receiver_woman + sender_woman + target_woman +
-                        samegroup_SR + samegroup_ST + samegroup_RT +
+                        samegroup_SR + samegroup_ST + samegroup_RT + samegroup_SR:samegroup_ST +
                         (1|unit) + (1|unit:receiver) + (1|unit:sender) + (1|unit:target),
                       family=binomial(link='logit'))
 summary(results_neg2)
@@ -141,7 +141,7 @@ results_pos3 <- glmer(data=triad_data,pos_gossip ~
                         SR_neg + ST_neg + RT_neg +
                         receiver_boss + sender_boss + target_boss +
                         receiver_woman + sender_woman + target_woman +   
-                        samegroup_SR + samegroup_ST + samegroup_RT +
+                        samegroup_SR + samegroup_ST + samegroup_RT + samegroup_SR:samegroup_ST +
                         receiver_role + sender_role + target_role +
                         receiver_iso + sender_iso + target_iso +
                         (1|unit) + (1|unit:receiver) + (1|unit:sender) + (1|unit:target),
@@ -152,7 +152,7 @@ results_neg3 <- glmer(data=triad_data,neg_gossip ~
                         SR_neg + ST_neg + RT_neg +
                         receiver_boss + sender_boss + target_boss +
                         receiver_woman + sender_woman + target_woman +   
-                        samegroup_SR + samegroup_ST + samegroup_RT +
+                        samegroup_SR + samegroup_ST + samegroup_RT + samegroup_SR:samegroup_ST +
                         receiver_role + sender_role + target_role +
                         receiver_iso + sender_iso + target_iso + 
                         (1|unit) + (1|unit:receiver) + (1|unit:sender) + (1|unit:target),
@@ -185,14 +185,15 @@ effsize_plot <- rbind(effsize_pos3,effsize_neg3)
 effsize_plot$Parameter <- factor(effsize_plot$Parameter,
                                  levels=c('target_iso','receiver_iso','sender_iso',
                                           'target_rolebroker','receiver_rolebroker','sender_rolebroker',
-                                          'samegroup_RT','samegroup_ST','samegroup_SR',
+                                          'samegroup_SR:samegroup_ST','samegroup_RT','samegroup_ST','samegroup_SR',
                                           'target_boss','receiver_boss','sender_boss',
                                           'target_woman','receiver_woman','sender_woman',
                                           'RT_neg','ST_neg','SR_neg',
                                           'RT_pos','ST_pos','SR_pos','(Intercept)'),
                                  labels=c('Isolate (target)','Isolate (receiver)','Isolate (sender)',
                                           'Broker (target)','Broker (receiver)','Broker (sender)',
-                                          'Same group (receiver-target)','Same group (sender-target)','Same group (sender-receiver)',
+                                          'Same group (sender-receiver-target)','Same group (receiver-target)',
+                                          'Same group (sender-target)','Same group (sender-receiver)',
                                           'Manager (target)','Manager (receiver)','Manager (sender)',
                                           'Woman (target)','Woman (receiver)','Woman (sender)',
                                           'Negative tie (receiver-target)','Negative tie (sender-target)','Negative tie (sender-receiver)',
