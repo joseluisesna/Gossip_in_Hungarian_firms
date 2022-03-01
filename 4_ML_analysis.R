@@ -2,11 +2,11 @@
 ## GOSSIP IN HUNGARIAN FIRMS
 ## Multilevel analysis (4)
 ## R script written by Jose Luis Estevez (Masaryk University)
-## Date: Feb 27h 2022
+## Date: Mar 1st 2022
 ########################################################################################################################
 
 # R PACKAGES REQUIRED
-library(lme4)
+library(lme4);library(effectsize);library(ggplot2)
 # DATA LOADING
 rm(list=ls())
 load('modellingdata.RData')
@@ -161,6 +161,62 @@ summary(results_neg3)
 
 # Model comparison
 anova(results_pos2,results_pos3);anova(results_neg2,results_neg3)
+
+########################################################################################################################
+
+# 3) STANDARDISED COEFFICIENTS
+# Positive gossip
+effsize_pos1 <- effectsize(results_pos1)
+effsize_pos2 <- effectsize(results_pos2)
+effsize_pos3 <- effectsize(results_pos3)
+# Negative gossip
+effsize_neg1 <- effectsize(results_neg1)
+effsize_neg2 <- effectsize(results_neg2)
+effsize_neg3 <- effectsize(results_neg3)
+
+effsize_pos3
+effsize_neg3
+
+# Visualisation
+effsize_pos3$gossiptype <- 'Positive gossip'
+effsize_neg3$gossiptype <- 'Negative gossip'
+effsize_plot <- rbind(effsize_pos3,effsize_neg3)
+
+effsize_plot$Parameter <- factor(effsize_plot$Parameter,
+                                 levels=c('target_iso','receiver_iso','sender_iso',
+                                          'target_rolebroker','receiver_rolebroker','sender_rolebroker',
+                                          'samegroup_RT','samegroup_ST','samegroup_SR',
+                                          'target_boss','receiver_boss','sender_boss',
+                                          'target_woman','receiver_woman','sender_woman',
+                                          'RT_neg','ST_neg','SR_neg',
+                                          'RT_pos','ST_pos','SR_pos','(Intercept)'),
+                                 labels=c('Isolate (target)','Isolate (receiver)','Isolate (sender)',
+                                          'Broker (target)','Broker (receiver)','Broker (sender)',
+                                          'Same group (receiver-target)','Same group (sender-target)','Same group (sender-receiver)',
+                                          'Manager (target)','Manager (receiver)','Manager (sender)',
+                                          'Woman (target)','Woman (receiver)','Woman (sender)',
+                                          'Negative tie (receiver-target)','Negative tie (sender-target)','Negative tie (sender-receiver)',
+                                          'Positive tie (receiver-target)','Positive tie (sender-target)','Positive tie (sender-receiver)',
+                                          'Intercept'))
+effsize_plot$gossiptype <- factor(effsize_plot$gossiptype,levels=c('Positive gossip','Negative gossip'))
+
+grid.background <- theme_bw()+
+  theme(plot.background=element_blank(),panel.grid.minor=element_blank(),panel.border=element_blank())+
+  theme(axis.line=element_line(color='black'))+
+  theme(strip.text.x=element_text(colour='white',face='bold'))+
+  theme(strip.background=element_rect(fill='black'))
+
+jpeg(filename='Results.jpeg',width=10,height=8,units='in',res=500)
+ggplot(data=effsize_plot[effsize_plot$Parameter != 'Intercept',], aes(x=Parameter, y=Std_Coefficient, ymin=CI_low, ymax=CI_high)) +
+  geom_hline(yintercept= 0, lty=2,colour='red') +
+  geom_pointrange(position=position_dodge(width = 0.5)) +
+  facet_wrap(~gossiptype) +
+  coord_flip() +
+  xlab("") + ylab("Standardised coefficient (95% CI)") +
+  theme_bw() +
+  theme(axis.text=element_text(size=10), axis.title=element_text(size=12)) +
+  grid.background
+dev.off()
 
 ########################################################################################################################
 
