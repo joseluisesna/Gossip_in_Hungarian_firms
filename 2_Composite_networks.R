@@ -114,7 +114,7 @@ rownames(mean_jaccard) <- c('Deserve wage increase','Cooperate well','Cooperate 
                             'Do their job well','Other colleagues listen to them','Other colleagues ask them for help',
                             'Other colleagues despise them','Other colleagues appreciate them','Are neutral to me',
                             'Are trustworthy','I appreciate them','Share negative information about me',
-                            'Are not a friend','Does not belong to the team','Are not suitable for the job',
+                            'Are not a friend','Do not belong to the team','Are not suitable for the job',
                             'Are popular','I turn for help','Regular personal conversations','Regular work conversations')
 colnames(mean_jaccard) <- rownames(mean_jaccard)
 
@@ -134,7 +134,7 @@ clust_order <- c('I turn for help','Other colleagues ask them for help','I appre
                  'Other colleagues appreciate them','Other colleagues listen to them','I listen to them','Are popular',
                  'Are trustworthy','Do their job well','Are a friend','Cooperate well','Cooperate with job duties',
                  'Deserve wage increase','Regular work conversations','Regular personal conversations',
-                 'Share negative information about me','Deserve wage cut','Does not belong to the team',
+                 'Share negative information about me','Deserve wage cut','Do not belong to the team',
                  'Other colleagues despise them','Are not suitable for the job','Are not a friend','Would not cooperate',
                  'Are neutral to me')
 mean_jaccard2 <- matrix(NA,nrow=nrow(mean_jaccard),ncol=ncol(mean_jaccard),dimnames=list(clust_order,clust_order))
