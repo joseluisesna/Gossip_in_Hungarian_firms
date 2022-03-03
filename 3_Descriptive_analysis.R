@@ -409,13 +409,13 @@ attributes <- merge(x=attributes,y=brokers,by.x='responder',by.y='ID',all.x=TRUE
 summary(attributes$brokers)
 
 # Female brokers
-sum(attributes[attributes$brokers == 'broker',]$woman)
-sum(attributes[attributes$brokers == 'non-broker',]$woman)
+table(attributes[attributes$woman == 1,]$brokers) # women
+table(attributes[attributes$woman == 0,]$brokers) # men
 prop.test(x=c(8,33),n=c(28,100),alternative='two.sided')
 
 # Brokers in management
-sum(attributes[attributes$brokers == 'broker',]$hr_leader)
-sum(attributes[attributes$brokers == 'non-broker',]$hr_leader)
+table(attributes[attributes$hr_leader == 1,]$brokers) # manager
+table(attributes[attributes$hr_leader == 0,]$brokers) # employee
 prop.test(x=c(16,18),n=c(28,100),alternative='two.sided')
 
 # Age of brokers
