@@ -1,7 +1,7 @@
 # Gossip in Hungarian firms
 
 This repository contains the replication package for the article: 
-Estévez, J. L., & Takács, K. (under review). Digging your structural hole? A group perspective on workplace gossip. *journal*. DOI: .
+Estévez, J. L., & Takács, K. (under review). Digging your structural hole?: A group perspective on workplace gossip. *journal*. DOI: .
 
 **Software requirements**
 
