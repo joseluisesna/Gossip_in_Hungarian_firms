@@ -17,6 +17,7 @@ R (code was last run with R version 4.1.2 in RStudio 2021.09.0)
 - ggpubr (0.4.0)
 - lme4 (1.1-27.1)
 - effectsize (0.6.0.1)
+- insight (0.17.1)
 
 **File list**
 
