@@ -301,7 +301,7 @@ plot(ntw_plot[[i]]$vis,mark.groups=ntw_plot[[i]]$group,
      edge.arrow.size=.2,vertex.label=NA,layout=ntw_plot[[i]]$layout,
      main=paste("Unit",LETTERS[i],sep=' '))
 }
-legend("bottomright",bty="o",legend=c('broker','non-broker'),fill=c('gold','royalblue'))
+legend("bottomright",legend=c('broker','non-broker'),pt.bg=c('gold','royalblue'),pch=21,pt.cex=2, cex=1.5, bty="o")
 
 dev.off()
 

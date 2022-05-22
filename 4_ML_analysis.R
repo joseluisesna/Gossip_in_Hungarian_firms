@@ -6,7 +6,7 @@
 ########################################################################################################################
 
 # R PACKAGES REQUIRED
-library(lme4);library(effectsize);library(ggplot2)
+library(lme4);library(effectsize);library(ggplot2);library(insight)
 # DATA LOADING
 rm(list=ls())
 load('modellingdata.RData')
@@ -219,6 +219,26 @@ ggplot(data=effsize_plot[effsize_plot$Parameter != 'Intercept',], aes(x=Paramete
   theme(axis.text=element_text(size=10), axis.title=element_text(size=12)) +
   grid.background
 dev.off()
+
+########################################################################################################################
+
+# 4) PSEUDO R-SQUARES
+pvars <- insight::get_variance(results_pos3)
+nvars <- insight::get_variance(results_neg3)
+
+# Marginal R^2
+r2_marginal_p <- pvars$var.fixed / (pvars$var.fixed + pvars$var.random + pvars$var.residual)
+r2_marginal_p # for positive gossip
+
+r2_marginal_n <- nvars$var.fixed / (nvars$var.fixed + nvars$var.random + nvars$var.residual)
+r2_marginal_n # for negative gossip
+
+# Conditional R^2
+r2_cond_p <- (pvars$var.fixed + pvars$var.random) / (pvars$var.fixed + pvars$var.random + pvars$var.residual)
+r2_cond_p  # for positive gossip
+
+r2_cond_n <- (nvars$var.fixed + nvars$var.random) / (nvars$var.fixed + nvars$var.random + nvars$var.residual)
+r2_cond_n  # for negative gossip
 
 ########################################################################################################################
 
