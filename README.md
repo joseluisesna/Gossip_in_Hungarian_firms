@@ -1,7 +1,7 @@
 # Gossip in Hungarian firms
 
 This repository contains the replication package for the article: 
-Estévez, J. L., & Takács, K. (under review). Brokering or sitting between two chairs?: A group perspective on workplace gossip. *journal*. DOI: .
+Estévez, J. L., & Takács, K. (under review). Brokering or sitting between two chairs?: A group perspective on workplace gossip. *Frontiers in Psychology*. DOI: 10.3389/fpsyg.2022.815383.
 
 **Software requirements**
 
