@@ -1,9 +1,13 @@
 # Gossip in Hungarian firms
 
+[![R language](https://img.shields.io/badge/language-R-blue)](https://www.r-project.org/)
+[![ERC funding](https://img.shields.io/badge/funding-ERC-green)](https://cordis.europa.eu/project/id/648693)
+[![CC BY 4.0](https://img.shields.io/badge/license-CC_BY_4.0-red)](https://creativecommons.org/licenses/by/4.0/)
+
 This repository contains the replication package for the article: 
 - Estévez, J. L., & Takács, K. (2022). Brokering or sitting between two chairs? A group perspective on workplace gossip. *Frontiers in Psychology, 13*: 815383. https://doi.org/10.3389/fpsyg.2022.815383.
 
-**Software requirements**
+## Software requirements
 
 R (code was last run with R version 4.1.2 in RStudio 2021.09.0)
 - ggplot2 (3.3.5)
@@ -19,7 +23,7 @@ R (code was last run with R version 4.1.2 in RStudio 2021.09.0)
 - effectsize (0.6.0.1)
 - insight (0.17.1)
 
-**File list**
+## File list
 
 - 1_Data_tidying.R
 - 2_Composite_networks.R
